@@ -86,13 +86,25 @@ canvas { width: 100%; height: 100%; display: block; }
 #oyunPanel { flex-direction: column; }
 .oyun-hud { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 16px; flex-wrap: wrap; }
 .hud-group { display: flex; align-items: center; gap: 8px; }
+.hud-sag { margin-left: auto; }
+.puan-wrap { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: #00d4ff15; border: 1px solid #00d4ff44; }
+.puan-lbl { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+.puan-goster { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: var(--accent); min-width: 32px; text-align: right; }
 .canlar { display: flex; gap: 4px; }
 .kalp { font-size: 20px; transition: transform .2s; }
 .kalp.kayip { filter: grayscale(1); opacity: .3; }
-.seviye-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 20px; background: linear-gradient(135deg,#ffd70033,#ff8c4233); border: 1px solid #ffd70055; color: var(--gold); letter-spacing: 1px; }
-.seri-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #ff8c4220; border: 1px solid #ff8c4244; color: var(--pose); letter-spacing: 1px; transition: all .3s; }
+.seri-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #ff8c4220; border: 1px solid #ff8c4244; color: var(--pose); letter-spacing: 1px; transition: all .3s; display: inline-flex; align-items: center; gap: 5px; }
 .seri-badge.aktif { background: #ff8c4240; border-color: var(--pose); }
-.puan-goster { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--accent); min-width: 80px; text-align: right; }
+.bilinen-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #00d4ff20; border: 1px solid #00d4ff44; color: var(--accent); letter-spacing: 1px; display: inline-flex; align-items: center; gap: 5px; }
+.seviye-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 20px; background: linear-gradient(135deg,#ffd70033,#ff8c4233); border: 1px solid #ffd70055; color: var(--gold); letter-spacing: 1px; display: inline-flex; align-items: center; gap: 5px; }
+.badge-ikon { font-size: 1.1em; }
+.badge-lbl { opacity: 0.8; }
+.badge-deger { font-weight: 700; }
+.pas-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 10px; border: 1.5px solid var(--accent); background: #00d4ff15; color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all .15s; }
+.pas-btn:hover:not(:disabled) { background: #00d4ff28; transform: translateY(-1px); }
+.pas-btn:disabled { opacity: 0.35; cursor: not-allowed; border-color: var(--border); color: var(--muted); background: transparent; }
+.pas-sayi { background: var(--accent); color: var(--bg); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+.pas-btn:disabled .pas-sayi { background: var(--muted); }
 .oyun-main { display: flex; flex: 1; overflow: hidden; }
 .oyun-canvas-wrap { flex: 1; position: relative; background: var(--bg); min-width: 0; overflow: hidden; }
 .oyun-sag { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; padding: 20px 14px; gap: 12px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
@@ -111,6 +123,7 @@ canvas { width: 100%; height: 100%; display: block; }
 .sonuc-text.goster { opacity: 1; transform: scale(1); }
 .sonuc-text.dogru-renk { color: var(--correct); text-shadow: 0 0 30px var(--correct); }
 .sonuc-text.yanlis-renk { color: var(--wrong); text-shadow: 0 0 30px var(--wrong); }
+.sonuc-text.pas-renk { color: var(--accent); text-shadow: 0 0 30px var(--accent); font-size: 32px; }
 .puan-popup { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--gold); opacity: 0; transform: translateY(0); transition: all .6s ease-out; text-shadow: 0 0 20px var(--gold); }
 .puan-popup.goster { opacity: 1; transform: translateY(-40px); }
 .game-over { position: absolute; inset: 0; background: #080c10f0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 20; backdrop-filter: blur(4px); }
@@ -177,11 +190,18 @@ canvas { width: 100%; height: 100%; display: block; }
   .tab-btn { padding: 6px 12px; font-size: 10px; letter-spacing: 1px; }
   .status-pill { font-size: 10px; padding: 3px 8px; }
 
-  /* Oyun HUD: kompakt */
-  .oyun-hud { padding: 8px 12px; gap: 8px; }
-  .seviye-badge, .seri-badge { font-size: 10px; padding: 3px 8px; }
-  .puan-goster { font-size: 14px; min-width: 50px; }
-  .kalp { font-size: 16px; }
+  /* Oyun HUD: tek satir, kompakt */
+  .oyun-hud { padding: 6px 8px; gap: 5px; flex-wrap: nowrap; }
+  .hud-group { gap: 4px; }
+  /* Mobile: badge'lerdeki yazi etiketlerini gizle, sadece ikon+sayi */
+  .badge-lbl { display: none; }
+  .seviye-badge, .seri-badge, .bilinen-badge { font-size: 11px; padding: 3px 7px; gap: 3px; }
+  .puan-wrap { padding: 3px 8px; gap: 4px; }
+  .puan-lbl { display: none; }   /* mobile: "PUAN" yazisini gizle */
+  .puan-goster { font-size: 13px; min-width: 24px; }
+  .pas-btn { padding: 6px 10px; font-size: 10px; letter-spacing: 1px; }
+  .pas-sayi { padding: 1px 6px; font-size: 10px; }
+  .kalp { font-size: 14px; }
 
   /* ══ EĞİTİM MOBILE ══ */
   /* Sidebar dar, avatar geniş */
@@ -210,7 +230,7 @@ canvas { width: 100%; height: 100%; display: block; }
   .oyun-main { flex-direction: column; }
   .oyun-canvas-wrap {
     flex: 0 0 auto;        /* esnemesin */
-    height: 50vh;          /* %42 → %50, şıklar artık kompakt */
+    height: 48vh;          /* HUD tek satir oldu, alan kazanildi */
     min-height: 280px;
     max-height: 420px;
   }
@@ -218,8 +238,8 @@ canvas { width: 100%; height: 100%; display: block; }
     flex: 1 1 auto;        /* kalan tüm alanı kapla */
     width: 100%;
     flex-direction: column;
-    padding: 10px 12px;
-    gap: 8px;
+    padding: 8px 12px;
+    gap: 6px;              /* pas butonu eklendiği için kompakt */
     border-left: none;
     border-top: 1px solid var(--border);
     overflow-y: auto;
@@ -227,14 +247,14 @@ canvas { width: 100%; height: 100%; display: block; }
   .soru-label { font-size: 9px; }
   .secenekler-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    flex: 0 0 auto;        /* esnemesin, içeriğe göre */
+    gap: 6px;
+    flex: 0 0 auto;
   }
   .secenek-btn {
-    padding: 12px 8px !important;
-    font-size: 13px !important;
-    min-height: 52px !important;
-    height: 52px !important;   /* sabit yükseklik — uzamaz */
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    min-height: 46px !important;
+    height: 46px !important;
   }
   .secenek-harf {
     font-size: 9px !important;
@@ -369,14 +389,15 @@ canvas { width: 100%; height: 100%; display: block; }
       <div class="canlar" id="canlar">
         <span class="kalp">❤️</span><span class="kalp">❤️</span><span class="kalp">❤️</span>
       </div>
-      <div class="seviye-badge" id="seviyeBadge">⭐ Seviye 1</div>
+      <div class="seviye-badge" id="seviyeBadge"><span class="badge-ikon">⭐</span><span class="badge-lbl">Seviye</span><span class="badge-deger" id="seviyeDeger">1</span></div>
     </div>
-    <div class="hud-group">
-      <div class="seri-badge" id="seriBadge">🔥 Seri: 0</div>
-    </div>
-    <div class="hud-group">
-      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">PUAN</div>
-      <div class="puan-goster" id="puanGoster">0</div>
+    <div class="hud-group hud-sag">
+      <div class="seri-badge" id="seriBadge"><span class="badge-ikon">🔥</span><span class="badge-lbl">Seri:</span><span class="badge-deger" id="seriDeger">0</span></div>
+      <div class="bilinen-badge" id="bilinenBadge"><span class="badge-ikon">✅</span><span class="badge-lbl">Toplam:</span><span class="badge-deger" id="bilinenDeger">0</span></div>
+      <div class="puan-wrap">
+        <span class="puan-lbl">PUAN</span>
+        <span class="puan-goster" id="puanGoster">0</span>
+      </div>
     </div>
   </div>
 
@@ -444,6 +465,12 @@ canvas { width: 100%; height: 100%; display: block; }
         <span>⟷ Ayna görüntüsü</span>
         <span class="toggle-switch"><input type="checkbox" id="oyunLayerAyna" onchange="aynaDegistir()"><span class="slider"></span></span>
       </label>
+
+      <!-- Pas butonu -->
+      <button id="btnPas" class="pas-btn" onclick="pasYap()">
+        <span>⏭ PAS</span>
+        <span class="pas-sayi" id="pasSayi">3</span>
+      </button>
 
       <div class="secenekler-grid" id="seceneklerGrid"></div>
     </div>
@@ -642,26 +669,66 @@ const egitim = { kelime: null, varyantIdx: 0, kareIdx: 0, oynatiliyor: false, an
 
 // Oyun
 const oyun = {
+  // ── FSM DIŞI LEGACY FLAG'LER ─────────────────────────────
+  // Bu flag'ler FSM'den türetilebilir, ama kod boyunca yayılmış kullanım
+  // olduğu için bırakıldı. Yeni kod sadece oyun.durum'a bakmalı.
+  //   aktif        → durum !== 'idle' && durum !== 'game_over'
+  //   cevapVerildi → durum === 'answer_feedback'
+  //   baslamadi    → durum === 'idle' (ilk başta)
   aktif: false, baslamadi: true,
+  // ── ASIL STATE (FSM tek doğruluk kaynağı) ────────────────
   durum: 'idle',  // ← FSM: 'idle' | 'loading' | 'question_active' | 'answer_feedback' | 'transitioning' | 'game_over'
   kelime: null, animasyon: null, varyantIdx: 0, kareIdx: 0,
   oynatiliyor: false, animFrame: null, sonFrame: 0, gen: 0,
   _soruToken: 0,
   secenekler: [], dogruCevap: null, cevapVerildi: false,
-  can: 3, puan: 0, seri: 0, seviye: 1, dogruSayisi: 0, yanlisSayisi: 0
+  can: 3, puan: 0, seri: 0, seviye: 1, dogruSayisi: 0, yanlisSayisi: 0,
+  pasHakki: 3, pasSayisi: 0
 };
 
 // FSM gecisleri — tek merkez. Console log debugging icin.
 const OYUN_DURUMLAR = ['idle', 'loading', 'question_active', 'answer_feedback', 'transitioning', 'game_over'];
-function oyunDurumDegistir(yeni) {
+
+// ═══════════════════════════════════════════════════════════
+// CENTRALIZED TIMEOUT REGISTRY
+// ═══════════════════════════════════════════════════════════
+// Tüm setTimeout cagrilari buradan gecsin. Boylece toplu iptal edilebilir.
+// Etiket opsiyonel — belirli grupları seçici temizlemek için.
+const _timeoutRegistry = new Map();  // id → { fn, etiket, kayitT }
+let _timeoutIdCounter = 0;
+
+function registerTimeout(fn, ms, etiket = 'genel') {
+  const id = ++_timeoutIdCounter;
+  const realId = setTimeout(() => {
+    _timeoutRegistry.delete(id);
+    try { fn(); } catch (e) { console.error('[TIMEOUT] handler hata:', etiket, e); }
+  }, ms);
+  _timeoutRegistry.set(id, { realId, etiket, kayitT: Date.now() });
+  return id;
+}
+
+function clearAllTimeouts(etiket = null) {
+  let sayim = 0;
+  for (const [id, info] of _timeoutRegistry.entries()) {
+    if (etiket === null || info.etiket === etiket) {
+      clearTimeout(info.realId);
+      _timeoutRegistry.delete(id);
+      sayim++;
+    }
+  }
+  if (sayim > 0) console.log(`[TIMEOUT] ${etiket || 'TUM'} ${sayim} timeout iptal`);
+  return sayim;
+}
+
+function oyunDurumDegistir(yeni, force = false) {
   if (!OYUN_DURUMLAR.includes(yeni)) {
     console.warn('[FSM] gecersiz durum:', yeni);
     return false;
   }
   const eski = oyun.durum;
-  if (eski === yeni) return false;
+  if (eski === yeni && !force) return false;
   oyun.durum = yeni;
-  console.log(`[FSM] ${eski} → ${yeni}`);
+  console.log(`[FSM] ${eski} → ${yeni}${force ? ' (force)' : ''}`);
   butonDurumGuncelle();
   // Watchdog: loading veya transitioning'de takilirsak 5 saniye sonra kurtar
   if (typeof watchdogBaslat === 'function') {
@@ -705,6 +772,10 @@ function butonDurumGuncelle() {
     bt.style.opacity = tekrarAktif ? '1' : '0.4';
     bt.style.cursor = tekrarAktif ? 'pointer' : 'default';
   }
+  // Pas butonu: sadece question_active VE pasHakki > 0
+  const pasAktif = (d === 'question_active') && (oyun.pasHakki > 0);
+  const bp = document.getElementById('btnPas');
+  if (bp) bp.disabled = !pasAktif;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -856,10 +927,11 @@ function aramaHazirla() {
   // Arama sonucu uretici: skorlu + alfabetik
   function aramaSonuclari(q) {
     if (!q) return [];
-    const qn = q.toLowerCase();
+    // Turkce lowercase: 'tr-TR' locale ile dogru I/I/i/i haritalama
+    const qn = q.toLocaleLowerCase('tr-TR');
     const skorlu = [];
     for (const k of aramaListesi) {
-      const kn = k.kelime.toLowerCase();
+      const kn = k.kelime.toLocaleLowerCase('tr-TR');
       let skor = 0;
       if (kn === qn)            skor = 3;  // tam eslesme
       else if (kn.startsWith(qn)) skor = 2; // basinda
@@ -1323,8 +1395,10 @@ function oyunBaslat() {
   document.getElementById('oyunBaslangic').classList.add('gizle');
   oyunDurumDegistir('idle');  // reset
   oyun._soruToken++;  // bekleyen asenkron sorulari iptal et
+  clearAllTimeouts('oyun-akis');  // bekleyen oyun-akis timeoutlarini iptal et
   oyun.aktif=true; oyun.baslamadi=false;
   oyun.can=3; oyun.puan=0; oyun.seri=0; oyun.seviye=1; oyun.dogruSayisi=0; oyun.yanlisSayisi=0;
+  oyun.pasHakki=3; oyun.pasSayisi=0;
   canlarGuncelle(); hudGuncelle();
   oyunDurumDegistir('loading');
   soruOlustur();
@@ -1432,23 +1506,57 @@ function cevapVer(idx) {
     oyun.puan  += kazan;
     sonucGoster(true, '+' + kazan + ' pts');
     parcacikFirlatma();
-    if (oyun.dogruSayisi % 10 === 0) { oyun.seviye++; setTimeout(seviyeKutlama, 500); }
-    setTimeout(() => {
+    if (oyun.dogruSayisi % 10 === 0) { oyun.seviye++; registerTimeout(seviyeKutlama, 500, 'oyun-akis'); }
+    registerTimeout(() => {
       oyunDurumDegistir('transitioning');
       soruOlustur();
-    }, 1800);
+    }, 1800, 'oyun-akis');
   } else {
     oyun.seri = 0; oyun.yanlisSayisi++; oyun.can--;
     canlarGuncelle();
     sonucGoster(false, '');
     kareShake();
-    if (oyun.can <= 0) setTimeout(oyunBitir, 2200);
-    else setTimeout(() => {
+    if (oyun.can <= 0) registerTimeout(oyunBitir, 2500, 'oyun-akis');
+    else registerTimeout(() => {
       oyunDurumDegistir('transitioning');
       soruOlustur();
-    }, 2200);
+    }, 2500, 'oyun-akis');
   }
   hudGuncelle();
+}
+
+// ── PAS ───────────────────────────────────────────────
+// Kullanici zor soruda 3 kez pas hakki kullanabilir.
+// - Pas: can dusmez, puan degismez, seri sifirlanmaz
+// - Ama dogruSayisi artmaz (kelime sayilmaz)
+// - Dogru cevap gosterilir (ogrenme amacli)
+// - Pas hakki bittiginde buton disabled
+function pasYap() {
+  // FSM korumasi: sadece question_active'te pas
+  if (oyun.durum !== 'question_active') return;
+  if (oyun.pasHakki <= 0) return;
+  oyun.pasHakki--;
+  oyun.pasSayisi++;
+  oyun.cevapVerildi = true;  // tekrar pas/tikla edilmesin diye
+  oyunDurumDegistir('answer_feedback');
+
+  // Dogru sikki vurgula (yanlis akisindaki gibi ama "yanlis" siklari isaretlemeden)
+  oyun.secenekler.forEach((k, i) => {
+    const btn = document.getElementById('sec' + i);
+    if (!btn) return;
+    btn.disabled = true;
+    if (k.kelime === oyun.dogruCevap) btn.classList.add('dogru');
+  });
+
+  // Pas sonuc metni — notr (mavi tonlu, nötr mesaj)
+  sonucGoster('pas', oyun.dogruCevap);
+  hudGuncelle();
+
+  // 3 saniye sonra yeni soru (kullaniciya cevabi gormesi icin yeterli zaman)
+  registerTimeout(() => {
+    oyunDurumDegistir('transitioning');
+    soruOlustur();
+  }, 3000, 'oyun-akis');
 }
 
 function oyunTekrarIzle() {
@@ -1492,10 +1600,13 @@ function oyunHizGuncelle() {
 // ── HUD ───────────────────────────────────────────────
 function hudGuncelle() {
   document.getElementById('puanGoster').textContent  = oyun.puan;
-  const seri = document.getElementById('seriBadge');
-  seri.textContent = '🔥 Seri: ' + oyun.seri;
-  seri.classList.toggle('aktif', oyun.seri >= 3);
-  document.getElementById('seviyeBadge').textContent = '⭐ Seviye ' + oyun.seviye;
+  document.getElementById('seriDeger').textContent   = oyun.seri;
+  document.getElementById('bilinenDeger').textContent = oyun.dogruSayisi;
+  document.getElementById('seviyeDeger').textContent  = oyun.seviye;
+  document.getElementById('seriBadge').classList.toggle('aktif', oyun.seri >= 3);
+  // Pas sayisi gosterimi
+  const pasSayiEl = document.getElementById('pasSayi');
+  if (pasSayiEl) pasSayiEl.textContent = oyun.pasHakki;
 }
 
 function canlarGuncelle() {
@@ -1503,13 +1614,25 @@ function canlarGuncelle() {
 }
 
 // ── Sonuç ─────────────────────────────────────────────
-function sonucGoster(dogru, puanStr) {
+// mod: true/false (eski usul: dogru/yanlis) veya string 'dogru'|'yanlis'|'pas'
+function sonucGoster(mod, puanStr) {
   const t = document.getElementById('sonucText');
   const p = document.getElementById('puanPopup');
   t.className = 'sonuc-text';
   p.className = 'puan-popup';
-  t.textContent = dogru ? 'DOĞRU!' : 'YANLIŞ!';
-  t.classList.add(dogru ? 'dogru-renk' : 'yanlis-renk');
+  // Boolean → string normalize
+  if (mod === true)  mod = 'dogru';
+  if (mod === false) mod = 'yanlis';
+  if (mod === 'dogru') {
+    t.textContent = 'DOĞRU!';
+    t.classList.add('dogru-renk');
+  } else if (mod === 'yanlis') {
+    t.textContent = 'YANLIŞ!';
+    t.classList.add('yanlis-renk');
+  } else if (mod === 'pas') {
+    t.textContent = 'CEVAP:';
+    t.classList.add('pas-renk');
+  }
   p.textContent = puanStr;
   requestAnimationFrame(() => { t.classList.add('goster'); p.classList.add('goster'); });
 }
@@ -1522,24 +1645,25 @@ function sonucGizle() {
 function kareShake() {
   const w = document.getElementById('oyunCanvasWrap');
   w.classList.remove('salla'); void w.offsetWidth; w.classList.add('salla');
-  setTimeout(() => w.classList.remove('salla'), 400);
+  registerTimeout(() => w.classList.remove('salla'), 400, 'efekt');
 }
 
 function seviyeKutlama() {
   const el = document.getElementById('seviyeAtla');
   document.getElementById('seviyeAtlaText').textContent = '⭐ SEVİYE ' + oyun.seviye + '! ⭐';
   el.classList.add('goster');
-  setTimeout(() => el.classList.remove('goster'), 2000);
+  registerTimeout(() => el.classList.remove('goster'), 2000, 'efekt');
 }
 
 // ── Game over ─────────────────────────────────────────
 function oyunBitir() {
   oyunDurumDegistir('game_over');
   oyun._soruToken++;  // bekleyen asenkron sorulari iptal et
+  clearAllTimeouts('oyun-akis');  // bekleyen oyun-akis timeoutlarini iptal et
   oyun.aktif = false; durduOyun();
   document.getElementById('goScore').textContent = oyun.puan;
   document.getElementById('goStats').innerHTML =
-    `Seviye ${oyun.seviye} &nbsp;·&nbsp; ${oyun.dogruSayisi} Doğru &nbsp;·&nbsp; ${oyun.yanlisSayisi} Yanlış`;
+    `Seviye ${oyun.seviye} &nbsp;·&nbsp; ${oyun.dogruSayisi} Doğru &nbsp;·&nbsp; ${oyun.yanlisSayisi} Yanlış &nbsp;·&nbsp; ${oyun.pasSayisi} Pas`;
   skorKaydet(oyun.puan);
   liderGoster();
   document.getElementById('gameOver').classList.add('goster');
@@ -1616,11 +1740,11 @@ function watchdogBaslat(saniye = 5) {
   _watchdog = setTimeout(() => {
     if (oyun.durum === 'loading' || oyun.durum === 'transitioning') {
       hataGoster(`Watchdog: ${oyun.durum} ${saniye}s+ takildi, kurtariliyor`);
-      // Zorla yeni soru
+      // Zorla yeni soru — FSM uzerinden force ile
       if (oyun.aktif) {
         oyun._soruToken++;
-        oyun.durum = 'idle';  // FSM bypass — direkt set
-        oyunDurumDegistir('loading');
+        clearAllTimeouts('oyun-akis');  // bekleyen oyun-akis timeoutlarini iptal et
+        oyunDurumDegistir('loading', true);  // force: ayni state olsa bile tetikle
         soruOlustur();
       }
     }
