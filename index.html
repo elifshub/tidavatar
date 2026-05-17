@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TİD Avatar</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans:wght@300;400;600;700&display=swap');
+
+:root {
+  --bg: #080c10;
+  --surface: #0d1117;
+  --border: #1e2a38;
+  --accent: #00d4ff;
+  --accent2: #00ff9d;
+  --text: #c9d8e8;
+  --muted: #3a4f63;
+  --hand-r: #00d4ff;
+  --hand-l: #00ff9d;
+  --pose: #ff8c42;
+  --face: #c084fc;
+  --correct: #00ff9d;
+  --wrong: #ff4466;
+  --gold: #ffd700;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Noto Sans', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── HEADER ─────────────────────────────────────────── */
+header { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; gap: 16px; }
+.logo { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; white-space: nowrap; }
+.tab-switcher { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 4px; }
+.tab-btn { padding: 7px 18px; border-radius: 5px; border: none; background: transparent; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: all .2s; text-transform: uppercase; }
+.tab-btn.active { background: var(--accent); color: #000; }
+.tab-btn:not(.active):hover { color: var(--accent); }
+.status-pill { font-family: 'Space Mono', monospace; font-size: 10px; padding: 4px 10px; border-radius: 20px; background: #00d4ff18; border: 1px solid #00d4ff44; color: var(--accent); letter-spacing: 1px; white-space: nowrap; }
+
+/* ── PANELS ─────────────────────────────────────────── */
+.panel { display: none; flex: 1; overflow: hidden; }
+.panel.active { display: flex; }
+
+/* ══ EĞİTİM ══════════════════════════════════════════ */
+.sidebar { width: 280px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 16px; gap: 18px; overflow-y: auto; }
+.section-label { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.search-wrap { position: relative; }
+#searchInput { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 11px 36px 11px 12px; color: var(--text); font-family: 'Noto Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .2s; }
+#searchInput:focus { border-color: var(--accent); }
+#searchInput::placeholder { color: var(--muted); }
+.search-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.suggestions { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; max-height: 180px; overflow-y: auto; display: none; margin-top: 4px; }
+.sug-item { padding: 9px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--border); transition: background .15s; display: flex; justify-content: space-between; align-items: center; }
+.sug-item:last-child { border-bottom: none; }
+.sug-item:hover, .sug-item.aktif { background: #00d4ff15; color: var(--accent); }
+.sug-id { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+.info-box { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; line-height: 1.7; color: var(--muted); min-height: 80px; }
+.info-box .kw { color: var(--text); font-size: 18px; font-weight: 600; display: block; margin-bottom: 6px; }
+.info-box .kid { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); }
+.info-box .varyant { color: var(--accent2); margin-top: 4px; display: block; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: all .2s; text-transform: uppercase; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.speed-wrap { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 10px; }
+input[type=range] { flex: 1; accent-color: var(--accent); }
+.layer-toggles { display: flex; flex-direction: column; gap: 8px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+.toggle-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.toggle-switch { position: relative; width: 32px; height: 16px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch .slider { position: absolute; inset: 0; background: var(--border); border-radius: 16px; cursor: pointer; transition: .2s; }
+.toggle-switch .slider:before { content: ''; position: absolute; width: 10px; height: 10px; left: 3px; top: 3px; background: var(--muted); border-radius: 50%; transition: .2s; }
+.toggle-switch input:checked + .slider { background: #00d4ff22; border: 1px solid var(--accent); }
+.toggle-switch input:checked + .slider:before { transform: translateX(16px); background: var(--accent); }
+.canvas-wrap { flex: 1; position: relative; background: var(--bg); overflow: hidden; }
+canvas { width: 100%; height: 100%; display: block; }
+.frame-counter { position: absolute; bottom: 14px; right: 16px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+.progress-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--border); }
+.progress-fill { height: 100%; background: var(--accent); transition: width .1s linear; width: 0%; }
+.legend { position: absolute; top: 14px; right: 16px; display: flex; flex-direction: column; gap: 5px; font-family: 'Space Mono', monospace; font-size: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.no-data { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; line-height: 2; }
+
+/* ══ OYUN ════════════════════════════════════════════ */
+#oyunPanel { flex-direction: column; }
+.oyun-hud { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 16px; flex-wrap: wrap; }
+.hud-group { display: flex; align-items: center; gap: 8px; }
+.canlar { display: flex; gap: 4px; }
+.kalp { font-size: 20px; transition: transform .2s; }
+.kalp.kayip { filter: grayscale(1); opacity: .3; }
+.seviye-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 20px; background: linear-gradient(135deg,#ffd70033,#ff8c4233); border: 1px solid #ffd70055; color: var(--gold); letter-spacing: 1px; }
+.seri-badge { font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #ff8c4220; border: 1px solid #ff8c4244; color: var(--pose); letter-spacing: 1px; transition: all .3s; }
+.seri-badge.aktif { background: #ff8c4240; border-color: var(--pose); }
+.puan-goster { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--accent); min-width: 80px; text-align: right; }
+.oyun-main { display: flex; flex: 1; overflow: hidden; }
+.oyun-canvas-wrap { flex: 1; position: relative; background: var(--bg); min-width: 0; overflow: hidden; }
+.oyun-sag { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; padding: 20px 14px; gap: 12px; background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto; }
+.soru-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.tekrar-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 10px; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all .2s; text-transform: uppercase; }
+.tekrar-btn:hover { border-color: var(--accent); color: var(--accent); }
+.secenekler-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
+.secenek-btn { padding: 14px 10px; border-radius: 10px; border: 2px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Noto Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; text-align: center; line-height: 1.3; position: relative; }
+.secenek-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+.secenek-btn.dogru { border-color: var(--correct) !important; background: #00ff9d15 !important; color: var(--correct) !important; }
+.secenek-btn.yanlis { border-color: var(--wrong) !important; background: #ff446615 !important; color: var(--wrong) !important; }
+.secenek-btn:disabled { cursor: default; transform: none !important; }
+.secenek-harf { position: absolute; top: 6px; left: 8px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); }
+.sonuc-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+.sonuc-text { font-family: 'Space Mono', monospace; font-size: 42px; font-weight: 700; letter-spacing: 4px; opacity: 0; transform: scale(0.5); transition: all .25s cubic-bezier(.175,.885,.32,1.275); }
+.sonuc-text.goster { opacity: 1; transform: scale(1); }
+.sonuc-text.dogru-renk { color: var(--correct); text-shadow: 0 0 30px var(--correct); }
+.sonuc-text.yanlis-renk { color: var(--wrong); text-shadow: 0 0 30px var(--wrong); }
+.puan-popup { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--gold); opacity: 0; transform: translateY(0); transition: all .6s ease-out; text-shadow: 0 0 20px var(--gold); }
+.puan-popup.goster { opacity: 1; transform: translateY(-40px); }
+.game-over { position: absolute; inset: 0; background: #080c10f0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 20; backdrop-filter: blur(4px); }
+.game-over.goster { display: flex; }
+.go-title { font-family: 'Space Mono', monospace; font-size: 28px; letter-spacing: 4px; color: var(--wrong); text-shadow: 0 0 30px var(--wrong); }
+.go-score { font-family: 'Space Mono', monospace; font-size: 48px; color: var(--gold); text-shadow: 0 0 30px var(--gold); }
+.go-stats { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); text-align: center; line-height: 2; letter-spacing: 1px; }
+.go-btn { background: var(--accent); color: #000; border: none; padding: 14px 36px; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; font-weight: 700; transition: transform .1s; }
+.go-btn:hover { transform: scale(1.05); }
+.lider-wrap { border-top: 1px solid var(--border); padding-top: 12px; width: 100%; max-width: 280px; }
+.lider-title { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; text-align: center; margin-bottom: 8px; }
+.lider-item { display: flex; justify-content: space-between; padding: 5px 10px; font-family: 'Space Mono', monospace; font-size: 11px; border-radius: 4px; }
+.lider-item:nth-child(1) { color: var(--gold); background: #ffd70010; }
+.lider-item:nth-child(2) { color: #c0c0c0; }
+.lider-item:nth-child(3) { color: #cd7f32; }
+.oyun-baslangic { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; z-index: 15; background: var(--bg); }
+.oyun-baslangic.gizle { display: none; }
+.ob-title { font-family: 'Space Mono', monospace; font-size: 26px; color: var(--accent); letter-spacing: 4px; text-align: center; }
+.ob-sub { font-size: 14px; color: var(--muted); text-align: center; max-width: 340px; line-height: 1.7; }
+.ob-stats { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1px; text-align: center; }
+.ob-btn { background: var(--accent); color: #000; border: none; padding: 14px 40px; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 2px; cursor: pointer; font-weight: 700; transition: transform .1s, box-shadow .2s; text-transform: uppercase; box-shadow: 0 0 20px #00d4ff44; }
+.ob-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px #00d4ff66; }
+.seviye-atla { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 18; background: #080c10cc; pointer-events: none; }
+.seviye-atla.goster { display: flex; }
+.sa-text { font-family: 'Space Mono', monospace; font-size: 32px; color: var(--gold); letter-spacing: 4px; text-shadow: 0 0 40px var(--gold); animation: sallanma .4s ease-in-out 3; }
+@keyframes sallanma { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes sallaN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.salla { animation: sallaN .35s ease-in-out; }
+#particleCanvas { position: absolute; inset: 0; pointer-events: none; z-index: 9; width: 100%; height: 100%; }
+.load-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; gap: 16px; }
+.load-title { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+.load-bar { width: 200px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.load-fill { height: 100%; background: var(--accent); animation: loadAnim 1.5s ease-in-out infinite; }
+@keyframes loadAnim { 0% { width: 0%; margin-left: 0; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
+
+/* NEW: Hand shape badge */
+.el-sekli-badge { 
+  position: absolute; 
+  top: 14px; 
+  left: 16px; 
+  font-family: 'Space Mono', monospace; 
+  font-size: 9px; 
+  color: var(--muted); 
+  background: var(--surface); 
+  border: 1px solid var(--border); 
+  padding: 4px 8px; 
+  border-radius: 4px; 
+  opacity: 0; 
+  transition: opacity .3s; 
+  z-index: 5;
+}
+.el-sekli-badge.goster { opacity: 1; }
+
+/* NEW: Motion trail glow enhancement */
+@keyframes trailPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+/* ══ MOBILE RESPONSIVE ════════════════════════════════════ */
+@media (max-width: 700px) {
+  /* Header: kompakt */
+  header { padding: 8px 12px; gap: 8px; }
+  .logo { font-size: 11px; letter-spacing: 1px; }
+  .tab-btn { padding: 6px 12px; font-size: 10px; letter-spacing: 1px; }
+  .status-pill { font-size: 10px; padding: 3px 8px; }
+
+  /* Oyun HUD: kompakt */
+  .oyun-hud { padding: 8px 12px; gap: 8px; }
+  .seviye-badge, .seri-badge { font-size: 10px; padding: 3px 8px; }
+  .puan-goster { font-size: 14px; min-width: 50px; }
+  .kalp { font-size: 16px; }
+
+  /* ══ EĞİTİM MOBILE ══ */
+  /* Sidebar dar, avatar geniş */
+  .sidebar {
+    width: 140px;        /* 280px → 140px */
+    padding: 10px 8px;
+    gap: 10px;
+  }
+  .section-label { font-size: 8px; letter-spacing: 1px; }
+  #searchInput { font-size: 12px; padding: 8px 28px 8px 10px; }
+  .info-box { font-size: 11px; padding: 8px; min-height: auto; }
+  .info-box .kw { font-size: 14px; }
+  .btn { font-size: 9px; padding: 6px 8px; letter-spacing: 0; }
+  .controls { gap: 4px; }
+  .speed-wrap { font-size: 9px; gap: 5px; }
+  .toggle-row { font-size: 9px; }
+  .toggle-switch { width: 28px; height: 14px; }
+  .toggle-switch .slider:before { width: 8px; height: 8px; }
+  .toggle-switch input:checked + .slider:before { transform: translateX(14px); }
+  .legend { font-size: 8px; gap: 3px; top: 8px; right: 8px; }
+  .legend-dot { width: 6px; height: 6px; }
+  .frame-counter { font-size: 9px; bottom: 8px; right: 10px; }
+
+  /* ══ OYUN MOBILE ══ */
+  /* Layout column: canvas üstte sabit yükseklik, şıklar altta görünür */
+  .oyun-main { flex-direction: column; }
+  .oyun-canvas-wrap {
+    flex: 0 0 auto;        /* esnemesin */
+    height: 50vh;          /* %42 → %50, şıklar artık kompakt */
+    min-height: 280px;
+    max-height: 420px;
+  }
+  .oyun-sag {
+    flex: 1 1 auto;        /* kalan tüm alanı kapla */
+    width: 100%;
+    flex-direction: column;
+    padding: 10px 12px;
+    gap: 8px;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .soru-label { font-size: 9px; }
+  .secenekler-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    flex: 0 0 auto;        /* esnemesin, içeriğe göre */
+  }
+  .secenek-btn {
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+    min-height: 52px !important;
+    height: 52px !important;   /* sabit yükseklik — uzamaz */
+  }
+  .secenek-harf {
+    font-size: 9px !important;
+    top: 4px !important;
+    left: 6px !important;
+  }
+
+  /* Varyant butonu mobile'da daha kompakt */
+  #varyantBar {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+  #btnTekrarIzle, #btnSonrakiVaryant {
+    padding: 4px 8px !important;
+    font-size: 9px !important;
+    letter-spacing: 0 !important;
+  }
+  #varyantGoster {
+    font-size: 9px !important;
+    min-width: 60px !important;
+  }
+
+  /* Oyun başlangıç / game over modal mobile */
+  .ob-title { font-size: 22px; }
+  .ob-sub { font-size: 12px; max-width: 280px; }
+  .ob-btn, .go-btn { padding: 10px 24px; font-size: 12px; }
+  .go-title { font-size: 18px; }
+  .go-score { font-size: 36px; }
+}
+
+/* Çok dar (340px ve altı, eski iPhone SE vs) */
+@media (max-width: 360px) {
+  .sidebar { width: 120px; padding: 8px 6px; }
+  .info-box .kw { font-size: 13px; }
+  .tab-btn { padding: 5px 8px; font-size: 9px; }
+  .secenek-btn { font-size: 11px !important; padding: 8px 6px !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- YÜKLEME -->
+<div class="load-overlay" id="overlay">
+  <div class="load-title">TİD Avatar v5 Yükleniyor</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)" id="loadMsg">public/data/words.json bekleniyor...</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">TİD · İşaret Dili</div>
+  <div class="tab-switcher">
+    <button class="tab-btn active" id="tabEgitim" onclick="modGec('egitim', this)">📚 Eğitim</button>
+    <button class="tab-btn" id="tabOyun" onclick="modGec('oyun', this)">🎮 Oyun</button>
+  </div>
+  <div class="status-pill" id="statusPill">Yükleniyor</div>
+</header>
+
+<!-- ══ EĞİTİM PANELİ ══════════════════════════════════ -->
+<div class="panel active" id="egitimPanel">
+  <div class="sidebar">
+    <div>
+      <div class="section-label">Kelime Ara</div>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Kelime yazın..." autocomplete="off">
+        <span class="search-icon">⌕</span>
+      </div>
+      <div class="suggestions" id="suggestions"></div>
+      <button class="btn" onclick="rastgeleKelime()" style="width:100%;margin-top:8px;background:var(--accent);color:#000;border-color:var(--accent);font-weight:700">🎲 Rastgele Kelime</button>
+    </div>
+    <div class="info-box" id="infoBox">
+      <span style="color:var(--muted);font-size:12px">Yukarıdan bir kelime seçin.</span>
+    </div>
+    <div>
+      <div class="section-label">Oynatma</div>
+      <div class="controls">
+        <button class="btn" id="btnPlay" onclick="togglePlay()">▶ Oynat</button>
+        <button class="btn" onclick="oncekiVaryant()">◀ Önceki</button>
+        <button class="btn" onclick="sonrakiVaryant()">Sonraki ▶</button>
+      </div>
+      <div class="speed-wrap">
+        <span>Hız</span>
+        <input type="range" id="speedSlider" min="3" max="30" value="15" oninput="hizGuncelle()">
+        <span id="speedVal">1.5x</span>
+      </div>
+    </div>
+    <div>
+      <div class="section-label">Görünür Katmanlar</div>
+      <div class="layer-toggles">
+        <div class="toggle-row">
+          <span><span class="toggle-dot" style="background:var(--hand-r)"></span>Sağ El</span>
+          <label class="toggle-switch"><input type="checkbox" id="layerSagEl" checked onchange="renderConfigSync();kareRender('egitim')"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span><span class="toggle-dot" style="background:var(--hand-l)"></span>Sol El</span>
+          <label class="toggle-switch"><input type="checkbox" id="layerSolEl" checked onchange="renderConfigSync();kareRender('egitim')"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span><span class="toggle-dot" style="background:var(--pose)"></span>Vücut İskeleti</span>
+          <label class="toggle-switch"><input type="checkbox" id="layerPoz" checked onchange="renderConfigSync();kareRender('egitim')"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span><span class="toggle-dot" style="background:var(--face)"></span>Stilize Yüz</span>
+          <label class="toggle-switch"><input type="checkbox" id="layerYuz" checked onchange="renderConfigSync();kareRender('egitim')"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <span><span class="toggle-dot" style="background:var(--accent)"></span>⟷ Ayna görüntüsü</span>
+          <label class="toggle-switch"><input type="checkbox" id="layerAyna" onchange="aynaDegistir()"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="egitimCanvas"></canvas>
+    <div class="no-data" id="noData">KELİME SEÇİN<br><span style="font-size:9px;opacity:.5">Yukarıdan arama yapın</span></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--hand-r)"></div><span style="color:var(--muted)">Sağ El</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--hand-l)"></div><span style="color:var(--muted)">Sol El</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pose)"></div><span style="color:var(--muted)">Vücut</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--face)"></div><span style="color:var(--muted)">Yüz</span></div>
+    </div>
+    <div class="frame-counter" id="frameCounter">—</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</div>
+
+<!-- ══ OYUN PANELİ ════════════════════════════════════ -->
+<div class="panel" id="oyunPanel">
+  <!-- HUD -->
+  <div class="oyun-hud">
+    <div class="hud-group">
+      <div class="canlar" id="canlar">
+        <span class="kalp">❤️</span><span class="kalp">❤️</span><span class="kalp">❤️</span>
+      </div>
+      <div class="seviye-badge" id="seviyeBadge">⭐ Seviye 1</div>
+    </div>
+    <div class="hud-group">
+      <div class="seri-badge" id="seriBadge">🔥 Seri: 0</div>
+    </div>
+    <div class="hud-group">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">PUAN</div>
+      <div class="puan-goster" id="puanGoster">0</div>
+    </div>
+  </div>
+
+  <!-- Ana alan -->
+  <div class="oyun-main">
+    <!-- Canvas -->
+    <div class="oyun-canvas-wrap" id="oyunCanvasWrap">
+      <!-- Varyant çubuğu — canvas üstünde -->
+      <div id="varyantBar" style="position:absolute;top:0;left:0;right:0;z-index:11;display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:linear-gradient(to bottom,#080c10dd,transparent);pointer-events:none">
+        <button id="btnTekrarIzle" onclick="oyunTekrarIzle()" style="pointer-events:auto;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↺ Tekrar</button>
+        <div id="varyantGoster" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;min-width:80px;text-align:center">—</div>
+        <button id="btnSonrakiVaryant" onclick="oyunSonrakiVaryant()" style="pointer-events:auto;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sonraki ▶</button>
+      </div>
+
+      <canvas id="oyunCanvas"></canvas>
+      <canvas id="particleCanvas"></canvas>
+
+      <!-- Sonuç overlay -->
+      <div class="sonuc-overlay">
+        <div class="sonuc-text" id="sonucText"></div>
+        <div class="puan-popup" id="puanPopup"></div>
+      </div>
+
+      <!-- Seviye atla -->
+      <div class="seviye-atla" id="seviyeAtla">
+        <div class="sa-text" id="seviyeAtlaText"></div>
+        <div style="font-family:'Space Mono',monospace;font-size:13px;color:var(--muted)">Tebrikler!</div>
+      </div>
+
+      <!-- Game over -->
+      <div class="game-over" id="gameOver">
+        <div class="go-title">OYUN BİTTİ</div>
+        <div class="go-score" id="goScore">0</div>
+        <div class="go-stats" id="goStats"></div>
+        <div class="lider-wrap">
+          <div class="lider-title">— EN İYİ SKORLAR —</div>
+          <div id="liderListesi"></div>
+        </div>
+        <button class="go-btn" onclick="oyunBaslat()">Tekrar Oyna</button>
+      </div>
+
+      <!-- Başlangıç -->
+      <div class="oyun-baslangic" id="oyunBaslangic">
+        <div class="ob-title">🎮 OYUN MODU</div>
+        <div class="ob-sub">Avatar bir işaret gösterecek. Hangi kelime olduğunu tahmin et!<br>Her doğru cevap puan, her seri bonus kazandırır.</div>
+        <div class="ob-stats" id="obStats">— kelime yükleniyor —</div>
+        <button class="ob-btn" onclick="oyunBaslat()">Başla ▶</button>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">❤️❤️❤️ &nbsp; 3 Can &nbsp; · &nbsp; Seviye sistemi &nbsp; · &nbsp; Liderboard</div>
+      </div>
+    </div>
+
+    <!-- Sağ panel: seçenekler -->
+    <div class="oyun-sag">
+      <div class="soru-label">Bu İşaret Hangi Kelime?</div>
+
+      <!-- Hız seçimi -->
+      <div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">
+        <span>Hız</span>
+        <input type="range" id="oyunSpeedSlider" min="3" max="30" value="15" oninput="oyunHizGuncelle()" style="flex:1;accent-color:var(--accent)">
+        <span id="oyunSpeedVal" style="min-width:32px">1.5x</span>
+      </div>
+
+      <!-- Ayna -->
+      <label style="display:flex;align-items:center;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer">
+        <span>⟷ Ayna görüntüsü</span>
+        <span class="toggle-switch"><input type="checkbox" id="oyunLayerAyna" onchange="aynaDegistir()"><span class="slider"></span></span>
+      </label>
+
+      <div class="secenekler-grid" id="seceneklerGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// İSKELET BAĞLANTILARI
+// ═══════════════════════════════════════════════════════════
+const EL_BAGLANTILARI = [
+  [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
+  [0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],
+  [0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]
+];
+const POZ_BAGLANTILARI = [
+  // Yüz
+  [0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],
+  // Gövde
+  [11,12],[11,23],[12,24],[23,24],
+  // Kollar — omuzdan bileğe (el noktaları dahil değil)
+  [11,13],[13,15],[12,14],[14,16]
+];
+
+// ═══════════════════════════════════════════════════════════
+// HAREKET İZİ
+// ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// EL AVUCU DOLU ÇİZ
+// ═══════════════════════════════════════════════════════════
+function elAvucuCiz(ctx, cvs, noktalar, renk) {
+  if (!noktalar || noktalar.length < 21) return;
+  const { tc } = getCoords(cvs);
+
+  // Avuç içi çokgeni: bilek + 4 parmak tabanı
+  const avucNoktalar = [0, 5, 9, 13, 17]; // bilek + parmak tabanları
+  const pts = avucNoktalar.map(i => tc(noktalar[i]));
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+  ctx.closePath();
+  ctx.fillStyle = renk + '22';
+  ctx.fill();
+  ctx.strokeStyle = renk + '55';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Her parmak için dolgu çizgisi
+  const parmaklarIndex = [
+    [1, 2, 3, 4],    // başparmak
+    [5, 6, 7, 8],    // işaret
+    [9, 10, 11, 12], // orta
+    [13, 14, 15, 16],// yüzük
+    [17, 18, 19, 20] // serçe
+  ];
+
+  parmaklarIndex.forEach(parmak => {
+    const pts2 = parmak.map(i => tc(noktalar[i]));
+    ctx.beginPath();
+    ctx.moveTo(...pts2[0]);
+    pts2.slice(1).forEach(p => ctx.lineTo(...p));
+    ctx.strokeStyle = renk + '44';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = renk;
+    ctx.shadowBlur = 3;
+    ctx.stroke();
+  });
+  ctx.shadowBlur = 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VÜCUT SİLÜETİ
+// ═══════════════════════════════════════════════════════════
+function vucutSiluetCiz(ctx, cvs, poz) {
+  if (!poz || poz.length < 25) return;
+  const { tc } = getCoords(cvs);
+  const ok = i => poz[i] && (poz[i][3] === undefined || poz[i][3] > 0.3);
+  if (!ok(11) || !ok(12) || !ok(23) || !ok(24)) return;
+
+  const [sx1, sy1] = tc(poz[11]); // sol omuz
+  const [sx2, sy2] = tc(poz[12]); // sağ omuz
+  const [hx1, hy1] = tc(poz[23]); // sol kalça
+  const [hx2, hy2] = tc(poz[24]); // sağ kalça
+
+  // Gövde dolgusu
+  ctx.beginPath();
+  ctx.moveTo(sx1, sy1);
+  ctx.lineTo(sx2, sy2);
+  ctx.lineTo(hx2, hy2);
+  ctx.lineTo(hx1, hy1);
+  ctx.closePath();
+  ctx.fillStyle = '#ff8c4212';
+  ctx.fill();
+  ctx.strokeStyle = '#ff8c4233';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Kollar - boru şeklinde
+  [[11,13,15],[12,14,16]].forEach(([omuz, dirsek, bilek], idx) => {
+    if (!ok(omuz) || !ok(dirsek)) return;
+    const [ox, oy] = tc(poz[omuz]);
+    const [dx, dy] = tc(poz[dirsek]);
+
+    const genislik = 8;
+    const aci = Math.atan2(dy - oy, dx - ox) + Math.PI / 2;
+    const dx1 = Math.cos(aci) * genislik, dy1 = Math.sin(aci) * genislik;
+
+    ctx.beginPath();
+    ctx.moveTo(ox + dx1, oy + dy1);
+    ctx.lineTo(ox - dx1, oy - dy1);
+
+    if (ok(bilek)) {
+      const [bx, by] = tc(poz[bilek]);
+      const aci2 = Math.atan2(by - dy, bx - dx) + Math.PI / 2;
+      const dx2 = Math.cos(aci2) * genislik * 0.7, dy2 = Math.sin(aci2) * genislik * 0.7;
+      ctx.lineTo(bx - dx2, by - dy2);
+      ctx.lineTo(bx + dx2, by + dy2);
+    } else {
+      ctx.lineTo(dx - dx1 * 0.7, dy - dy1 * 0.7);
+      ctx.lineTo(dx + dx1 * 0.7, dy + dy1 * 0.7);
+    }
+
+    ctx.closePath();
+    ctx.fillStyle = '#ff8c4218';
+    ctx.fill();
+    ctx.strokeStyle = '#ff8c4233';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// ANA RENDER FONKSİYONLARI
+// ═══════════════════════════════════════════════════════════
+// Kafa cercevesi — poz noktalarindan elips cikar (amac: insan algisi icin baglam)
+function noktalariCiz(ctx, cvs, pts, renk, baglantiler, sabitR) {
+  if (!pts || !pts.length) return;
+  const { tc } = getCoords(cvs);
+
+  // Bağlantılar — ince, hafif glow
+  if (baglantiler) {
+    ctx.lineCap = 'round';
+    ctx.shadowColor = renk;
+    ctx.shadowBlur = 6;
+    ctx.strokeStyle = renk + 'cc';
+    ctx.lineWidth = 2.2;
+    for (const [a, b] of baglantiler) {
+      if (!pts[a] || !pts[b]) continue;
+      const cA = pts[a][3] !== undefined ? pts[a][3] : 1;
+      const cB = pts[b][3] !== undefined ? pts[b][3] : 1;
+      if (Math.min(cA, cB) < 0.2) continue;
+      const [x1, y1] = tc(pts[a]);
+      const [x2, y2] = tc(pts[b]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+  }
+
+  // Eklemler — hafif halka + net iç nokta (test_viewer stili)
+  ctx.shadowBlur = 6;
+  for (let i = 0; i < pts.length; i++) {
+    if (!pts[i]) continue;
+    const c = pts[i][3] !== undefined ? pts[i][3] : 1;
+    if (c < 0.2) continue;
+    const [x, y] = tc(pts[i]);
+    const r = sabitR !== undefined ? sabitR
+      : (i === 0 ? 6 : (i % 4 === 0 ? 4 : 2.8));
+
+    // Hafif dış halka
+    ctx.fillStyle = renk + '33';
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // İç nokta — bilek koyu, diğerleri parlak
+    ctx.fillStyle = i === 0 ? renk : renk + 'ee';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+}
+// ═══════════════════════════════════════════════════════════
+let veriSeti   = null;
+let aktifMod   = 'egitim';
+let hiz        = 1.5;   // eğitim default (slider 15/10)
+let oyunHiz    = 1.5;   // oyun default (slider 15/10)
+
+// Eğitim
+const egitim = { kelime: null, varyantIdx: 0, kareIdx: 0, oynatiliyor: false, animFrame: null, sonFrame: 0, gen: 0, _yukToken: 0 };
+
+// Oyun
+const oyun = {
+  aktif: false, baslamadi: true,
+  durum: 'idle',  // ← FSM: 'idle' | 'loading' | 'question_active' | 'answer_feedback' | 'transitioning' | 'game_over'
+  kelime: null, animasyon: null, varyantIdx: 0, kareIdx: 0,
+  oynatiliyor: false, animFrame: null, sonFrame: 0, gen: 0,
+  _soruToken: 0,
+  secenekler: [], dogruCevap: null, cevapVerildi: false,
+  can: 3, puan: 0, seri: 0, seviye: 1, dogruSayisi: 0, yanlisSayisi: 0
+};
+
+// FSM gecisleri — tek merkez. Console log debugging icin.
+const OYUN_DURUMLAR = ['idle', 'loading', 'question_active', 'answer_feedback', 'transitioning', 'game_over'];
+function oyunDurumDegistir(yeni) {
+  if (!OYUN_DURUMLAR.includes(yeni)) {
+    console.warn('[FSM] gecersiz durum:', yeni);
+    return false;
+  }
+  const eski = oyun.durum;
+  if (eski === yeni) return false;
+  oyun.durum = yeni;
+  console.log(`[FSM] ${eski} → ${yeni}`);
+  butonDurumGuncelle();
+  // Watchdog: loading veya transitioning'de takilirsak 5 saniye sonra kurtar
+  if (typeof watchdogBaslat === 'function') {
+    if (yeni === 'loading' || yeni === 'transitioning') watchdogBaslat(5);
+    else watchdogDurdur();
+  }
+  return true;
+}
+
+// Butonlarin enable/disable mantigini state'e bagla.
+// Kurallar:
+//   loading:          tum oyun butonlari disabled
+//   question_active:  secenekler + varyant + tekrar aktif
+//   answer_feedback:  secenekler disabled (zaten cevap verildi), varyant disabled, tekrar aktif
+//   transitioning:    tum oyun butonlari disabled
+//   game_over / idle: tum oyun butonlari disabled
+function butonDurumGuncelle() {
+  const d = oyun.durum;
+  const seceneklerAktif = (d === 'question_active');
+  const tekrarAktif     = (d === 'question_active' || d === 'answer_feedback');
+  // Varyant: hem state question_active olmali HEM birden fazla varyant olmali
+  const cokVaryant      = !!(oyun.kelime && oyun.kelime.animasyonlar && oyun.kelime.animasyonlar.length > 1);
+  const varyantAktif    = (d === 'question_active') && cokVaryant;
+
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById('sec' + i);
+    if (btn) btn.disabled = !seceneklerAktif;
+  }
+  // Varyant ve Tekrar butonlari icin SADECE 'disabled' attribute + opacity.
+  // pointer-events'e HIC dokunmuyoruz — HTML'deki inline 'pointer-events:auto'
+  // varyantBar'in pointer-events:none kurallini override ediyor.
+  const bv = document.getElementById('btnSonrakiVaryant');
+  if (bv) {
+    bv.disabled = !varyantAktif;
+    bv.style.opacity = varyantAktif ? '1' : '0.4';
+    bv.style.cursor = varyantAktif ? 'pointer' : 'default';
+  }
+  const bt = document.getElementById('btnTekrarIzle');
+  if (bt) {
+    bt.disabled = !tekrarAktif;
+    bt.style.opacity = tekrarAktif ? '1' : '0.4';
+    bt.style.cursor = tekrarAktif ? 'pointer' : 'default';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CANVAS
+// ═══════════════════════════════════════════════════════════
+const eCanvas = document.getElementById('egitimCanvas');
+const eCtx    = eCanvas.getContext('2d');
+const oCanvas = document.getElementById('oyunCanvas');
+const oCtx    = oCanvas.getContext('2d');
+const pCanvas = document.getElementById('particleCanvas');
+const pCtx    = pCanvas.getContext('2d');
+
+function canvasBoyutAyarla(mod) {
+  if (mod === 'egitim' || mod === 'her') {
+    eCanvas.width  = eCanvas.parentElement.clientWidth;
+    eCanvas.height = eCanvas.parentElement.clientHeight;
+  }
+  if (mod === 'oyun' || mod === 'her') {
+    oCanvas.width = pCanvas.width  = oCanvas.parentElement.clientWidth;
+    oCanvas.height = pCanvas.height = oCanvas.parentElement.clientHeight;
+  }
+}
+window.addEventListener('resize', () => {
+  canvasBoyutAyarla('her');
+  kareRender(aktifMod);
+});
+
+// ═══════════════════════════════════════════════════════════
+// VERİ YÜKLEME
+// ═══════════════════════════════════════════════════════════
+// v3 veri formatı:
+//   public/data/words.json  → { "0001": {k, h, l, v}, ... }    (kelime indeksi)
+//   public/data/kp/0001.json → { "vid": {fps, kareler}, ... }   (lazy load)
+let wordsIndex = null;   // {kid: {k, h, l, v}}
+let kpCache = {};        // {kid: { animasyonlar:[{video, kareler, fps}] }}  v2 formatı bridge
+
+// ── DOM CACHING (her frame'de getElementById yapmamak için) ──
+// Init sirasinda doldurulur; render'da bunlar okunur.
+const renderConfig = { poz: true, sagEl: true, solEl: true, yuz: true };
+const domRefs = {
+  frameCounter:  null,  // egitim canvas alti
+  progressFill:  null,  // egitim progress bar
+  layerPoz:      null,  // checkbox
+  layerSagEl:    null,
+  layerSolEl:    null,
+  layerYuz:      null,
+};
+function domCacheInit() {
+  domRefs.frameCounter = document.getElementById('frameCounter');
+  domRefs.progressFill = document.getElementById('progressFill');
+  domRefs.layerPoz     = document.getElementById('layerPoz');
+  domRefs.layerSagEl   = document.getElementById('layerSagEl');
+  domRefs.layerSolEl   = document.getElementById('layerSolEl');
+  domRefs.layerYuz     = document.getElementById('layerYuz');
+  // Baslangic durumunu config'e yansit
+  renderConfigSync();
+}
+function renderConfigSync() {
+  if (domRefs.layerPoz)   renderConfig.poz   = domRefs.layerPoz.checked;
+  if (domRefs.layerSagEl) renderConfig.sagEl = domRefs.layerSagEl.checked;
+  if (domRefs.layerSolEl) renderConfig.solEl = domRefs.layerSolEl.checked;
+  if (domRefs.layerYuz)   renderConfig.yuz   = domRefs.layerYuz.checked;
+}
+
+async function kpYukle(kid) {
+  // v3 kp dosyasını yükle, v2 formatına bridge et
+  if (kpCache[kid]) return kpCache[kid];
+  const padsiz = String(parseInt(kid, 10));
+  let r = await fetch(`public/data/kp/${kid}.json`);
+  if (!r.ok && kid !== padsiz) r = await fetch(`public/data/kp/${padsiz}.json`);
+  if (!r.ok) throw new Error(`kp/${kid}.json bulunamadı`);
+  const ham = await r.json();
+  const animasyonlar = Object.entries(ham).map(([vid, data]) => ({
+    video: vid,
+    kareler: data.kareler,
+    fps: data.fps || 25
+  }));
+  const bridged = {
+    _id: kid,
+    kelime: wordsIndex[kid]?.k || '?',
+    el_sekilleri: wordsIndex[kid]?.h || [],
+    konumlar: wordsIndex[kid]?.l || [],
+    animasyonlar
+  };
+  kpCache[kid] = bridged;
+  return bridged;
+}
+
+async function veriYukle() {
+  try {
+    document.getElementById('loadMsg').textContent = 'public/data/words.json aranıyor...';
+    const r = await fetch('public/data/words.json');
+    if (!r.ok) throw new Error();
+    wordsIndex = await r.json();
+    const sayi = Object.keys(wordsIndex).length;
+    document.getElementById('overlay').style.display  = 'none';
+    document.getElementById('statusPill').textContent = sayi + ' kelime';
+    document.getElementById('obStats').textContent    = sayi + ' kelime · 3 Can · Seviye sistemi';
+    aramaHazirla();
+    canvasBoyutAyarla('her');
+  } catch (e) {
+    document.getElementById('loadMsg').innerHTML =
+      '❌ public/data/words.json bulunamadı<br><small style="color:#555">format_v3.py çalıştırılmış mı?</small>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// MOD GEÇİŞİ
+// ═══════════════════════════════════════════════════════════
+function modGec(mod, btn) {
+  aktifMod = mod;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(mod + 'Panel').classList.add('active');
+  btn.classList.add('active');
+
+  if (mod === 'oyun') {
+    // Egitim'in calma niyetini hatirla, sonra durdur
+    egitim._wasPlaying = egitim.oynatiliyor;
+    durdurEgitim();
+    canvasBoyutAyarla('oyun');
+    if (oyun.aktif) {
+      kareRender('oyun');
+      if (oyun.animasyon && !oyun.cevapVerildi) oyunOynat();
+    }
+  } else {
+    durduOyun();
+    canvasBoyutAyarla('egitim');
+    // Egitim animasyonu varsa, eskiden caliyorsa devam ettir
+    if (egitim.kelime) {
+      if (egitim._wasPlaying !== false) oynatEgitim();
+      else kareRender('egitim');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARAMA — EĞİTİM
+// ═══════════════════════════════════════════════════════════
+let aramaListesi = [];
+
+function aramaHazirla() {
+  aramaListesi = Object.entries(wordsIndex).map(([id, v]) => ({
+    id, kelime: v.k, varyant: v.v || 0
+  }));
+  const input = document.getElementById('searchInput');
+  const sug   = document.getElementById('suggestions');
+
+  // Arama sonucu uretici: skorlu + alfabetik
+  function aramaSonuclari(q) {
+    if (!q) return [];
+    const qn = q.toLowerCase();
+    const skorlu = [];
+    for (const k of aramaListesi) {
+      const kn = k.kelime.toLowerCase();
+      let skor = 0;
+      if (kn === qn)            skor = 3;  // tam eslesme
+      else if (kn.startsWith(qn)) skor = 2; // basinda
+      else if (kn.includes(qn))  skor = 1;  // icinde
+      if (skor > 0) skorlu.push({ ...k, skor });
+    }
+    // Once skora gore (yuksek once), sonra alfabetik
+    skorlu.sort((a, b) => b.skor - a.skor || a.kelime.localeCompare(b.kelime, 'tr'));
+    return skorlu.slice(0, 12);
+  }
+
+  function suGuncelle() {
+    const q = input.value.trim();
+    if (!q) { sug.style.display = 'none'; return; }
+    const e = aramaSonuclari(q);
+    if (!e.length) { sug.style.display = 'none'; return; }
+    sug.innerHTML = e.map((k, i) =>
+      `<div class="sug-item${i === 0 ? ' aktif' : ''}" onclick="kelimeAc('${k.id}')">
+        <span>${k.kelime}</span><span class="sug-id">${k.id}</span>
+      </div>`).join('');
+    sug.style.display = 'block';
+  }
+
+  input.addEventListener('input', suGuncelle);
+
+  // Enter ile aktif (vurgulu) oneriyi sec, ok tuslarinda gez
+  input.addEventListener('keydown', (ev) => {
+    const items = sug.querySelectorAll('.sug-item');
+    if (!items.length || sug.style.display === 'none') return;
+    let aktifIdx = -1;
+    items.forEach((el, i) => { if (el.classList.contains('aktif')) aktifIdx = i; });
+
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      const yeni = Math.min(aktifIdx + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('aktif', i === yeni));
+      items[yeni].scrollIntoView({ block: 'nearest' });
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      const yeni = Math.max(aktifIdx - 1, 0);
+      items.forEach((el, i) => el.classList.toggle('aktif', i === yeni));
+      items[yeni].scrollIntoView({ block: 'nearest' });
+    } else if (ev.key === 'Enter') {
+      ev.preventDefault();
+      const sec = aktifIdx >= 0 ? items[aktifIdx] : items[0];
+      sec.click();
+    } else if (ev.key === 'Escape') {
+      sug.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('click', ev => {
+    if (!ev.target.closest('.search-wrap') && !ev.target.closest('.suggestions'))
+      sug.style.display = 'none';
+  });
+}
+
+function rastgeleKelime() {
+  if (!aramaListesi || aramaListesi.length === 0) return;
+  // Sadece varyantı olan kelimelerden seç
+  const havuz = aramaListesi.filter(k => (k.varyant || 0) > 0);
+  if (havuz.length === 0) return;
+  const sec = havuz[Math.floor(Math.random() * havuz.length)];
+  document.getElementById('suggestions').style.display = 'none';
+  kelimeAc(sec.id);
+}
+
+async function kelimeAc(id) {
+  // Race guard token
+  const myToken = ++egitim._yukToken;
+  try {
+    const kelime = await kpYukle(id);
+    // Bu cagri hala en guncel mi?
+    if (myToken !== egitim._yukToken) {
+      console.log('[RACE] eski kelimeAc iptal:', id);
+      return;
+    }
+    egitim.kelime     = kelime;
+    egitim.varyantIdx = 0;
+    egitim.kareIdx    = 0;
+    // bbox hesapla
+    egitimBbox = bboxHesapla(egitim.kelime.animasyonlar[0].kareler);
+    _egitimAnimId = (egitim.kelime?.kelime || '?') + '_0';
+    document.getElementById('searchInput').value         = egitim.kelime.kelime;
+    document.getElementById('suggestions').style.display = 'none';
+    document.getElementById('noData').style.display      = 'none';
+    infoGuncelle();
+    canvasBoyutAyarla('egitim');
+    kareRender('egitim');
+    oynatEgitim();
+  } catch (err) {
+    if (myToken !== egitim._yukToken) return;  // sessizce
+    document.getElementById('infoBox').innerHTML =
+      `<span style="color:var(--wrong);font-size:11px">❌ ${err.message}</span>`;
+  }
+}
+
+function infoGuncelle() {
+  if (!egitim.kelime) return;
+  const v = egitim.kelime;
+  document.getElementById('infoBox').innerHTML = `
+    <span class="kw">${v.kelime}</span>
+    <span class="kid">ID: ${v._id}</span>
+    <span class="varyant">▸ ${v.animasyonlar.length} varyant — ${egitim.varyantIdx + 1}. oynatılıyor</span>`;
+  // Kare sayisi artik frameCounter elementinde, render her frame'de gunceller.
+}
+
+function egitimAnim() {
+  if (!egitim.kelime) return null;
+  return egitim.kelime.animasyonlar[egitim.varyantIdx];
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER YARDIMCILARı
+// ═══════════════════════════════════════════════════════════
+// v3 verisi omuz-merkezli normalize edilmiş (-0.5 sol omuz, +0.5 sağ omuz)
+let aynaModu = false;  // false = anatomik, true = ayna (solak için)
+
+// Aktif animasyonun olcek bilgisi (kareler set edilirken hesaplanir)
+// Hem egitim hem oyun icin: her birinin kendi bbox'u
+let egitimBbox = null;  // {minX, maxX, minY, maxY}
+let oyunBbox   = null;
+
+function bboxHesapla(kareler) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const k of kareler) {
+    // Eller
+    for (const el of [k.sag_el, k.sol_el]) {
+      if (!el?.length) continue;
+      for (const p of el) {
+        if (!p) continue;
+        if (p[0] < minX) minX = p[0];
+        if (p[0] > maxX) maxX = p[0];
+        if (p[1] < minY) minY = p[1];
+        if (p[1] > maxY) maxY = p[1];
+      }
+    }
+    // Poz (TUM noktalar — kollar, bacaklar, yuz dahil)
+    if (k.poz?.length) {
+      for (const p of k.poz) {
+        if (!p) continue;
+        const c = p[3] !== undefined ? p[3] : 1;
+        if (c < 0.3) continue;
+        if (p[0] < minX) minX = p[0];
+        if (p[0] > maxX) maxX = p[0];
+        if (p[1] < minY) minY = p[1];
+        if (p[1] > maxY) maxY = p[1];
+      }
+    }
+    // Yuz noktalari
+    if (k.yuz?.length) {
+      for (const p of k.yuz) {
+        if (!p) continue;
+        if (p[0] < minX) minX = p[0];
+        if (p[0] > maxX) maxX = p[0];
+        if (p[1] < minY) minY = p[1];
+        if (p[1] > maxY) maxY = p[1];
+      }
+    }
+  }
+  if (!isFinite(minX)) return null;
+  return { minX, maxX, minY, maxY };
+}
+
+function getCoords(cvs) {
+  const W = cvs.width, H = cvs.height;
+  const cx = W / 2;
+  // Aktif moda gore bbox sec
+  const bbox = (aktifMod === 'oyun') ? oyunBbox : egitimBbox;
+  const xSign = aynaModu ? -1 : 1;
+
+  if (bbox) {
+    // Dinamik olcek: tum kareler canvas'in icine sigsin (10% kenar bosluk)
+    const padding = 0.10;
+    const dataW = bbox.maxX - bbox.minX;
+    const dataH = bbox.maxY - bbox.minY;
+    // Veri merkezi
+    const dataCx = (bbox.maxX + bbox.minX) / 2;
+    const dataCy = (bbox.maxY + bbox.minY) / 2;
+    // Canvas'a sigdirma olcegi
+    const scaleX = (W * (1 - 2 * padding)) / Math.max(dataW, 0.5);
+    const scaleY = (H * (1 - 2 * padding)) / Math.max(dataH, 0.5);
+    const S = Math.min(scaleX, scaleY);
+    // Canvas ortasi
+    const cy = H / 2;
+    return {
+      S, OX: cx, OY: cy,
+      tc: p => [cx + xSign * (p[0] - dataCx) * S, cy + (p[1] - dataCy) * S]
+    };
+  }
+
+  // Bbox yoksa eski sabit deger
+  const cy = H * 0.38;
+  const Spx = H * 0.11;
+  return {
+    S: Spx * 2, OX: cx, OY: cy,
+    tc: p => [cx + xSign * p[0] * Spx * 2, cy + p[1] * Spx * 2]
+  };
+}
+
+// Ayna toggle: iki sekmede de aynı durumu paylaş
+function aynaDegistir() {
+  const e = document.getElementById('layerAyna');
+  const o = document.getElementById('oyunLayerAyna');
+  // Hangisinden tetiklendi? Diğerini de senkronla
+  // (event source belli değil, sadece aktif sekmenin durumunu kullan)
+  aynaModu = aktifMod === 'oyun' ? o.checked : e.checked;
+  if (e) e.checked = aynaModu;
+  if (o) o.checked = aynaModu;
+  kareRender(aktifMod);
+}
+
+function stilizeYuzCiz(ctx, cvs, poz, yuz) {
+  const { S, tc } = getCoords(cvs);
+  const ok = i => poz[i] && (poz[i][3] === undefined || poz[i][3] > 0.25);
+  if (!ok(2) || !ok(5) || !ok(9) || !ok(10)) return;
+
+  const [lex,ley] = tc(poz[2]), [rex,rey] = tc(poz[5]);
+  const [mx1,my1] = tc(poz[9]), [mx2,my2] = tc(poz[10]);
+  const eyesCy = (ley+rey)/2, mouthCx = (mx1+mx2)/2, mouthCy = (my1+my2)/2;
+  const faceH  = mouthCy - eyesCy;
+  const hTop   = eyesCy - faceH * 0.90, hBot = mouthCy + faceH * 0.50;
+  const cx = mouthCx, cy = (hTop+hBot)/2, headRy = (hBot-hTop)/2, headRx = headRy * 0.80;
+
+  ctx.save();
+  // Kafa
+  ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 14;
+  ctx.strokeStyle = '#c084fc66'; ctx.lineWidth = 2; ctx.fillStyle = '#c084fc08';
+  ctx.beginPath(); ctx.ellipse(cx, cy, headRx, headRy, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Gözler
+  const eyeRx = Math.hypot(lex-rex, ley-rey) * 0.16;
+  function gozCiz(ex, ey) {
+    ctx.fillStyle = '#c084fc'; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.ellipse(ex, ey, eyeRx, eyeRx*0.55, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#080c10'; ctx.shadowBlur = 0;
+    ctx.beginPath(); ctx.arc(ex, ey, eyeRx*0.48, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffffcc';
+    ctx.beginPath(); ctx.arc(ex-eyeRx*0.2, ey-eyeRx*0.2, eyeRx*0.15, 0, Math.PI*2); ctx.fill();
+  }
+  gozCiz(lex, ley); gozCiz(rex, rey);
+
+  // Kaşlar
+  const browY = eyesCy - eyeRx * 1.0, browOff = eyeRx * 1.4;
+  ctx.strokeStyle = '#c084fc99'; ctx.lineWidth = eyeRx*0.4; ctx.lineCap = 'round'; ctx.shadowBlur = 4;
+  [[lex, 1],[rex, -1]].forEach(([ex, dir]) => {
+    ctx.beginPath();
+    ctx.moveTo(ex - browOff*0.7, browY + eyeRx*0.1);
+    ctx.quadraticCurveTo(ex, browY - eyeRx*0.2, ex + browOff*0.7, browY + eyeRx*0.1);
+    ctx.stroke();
+  });
+
+  // Burun
+  if (ok(0)) {
+    const [nx,ny] = tc(poz[0]), nW = eyeRx*0.55;
+    ctx.fillStyle = '#c084fc66'; ctx.shadowBlur = 3;
+    ctx.beginPath(); ctx.ellipse(nx-nW*0.55, ny, nW*0.38, nW*0.28, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(nx+nW*0.55, ny, nW*0.38, nW*0.28, 0, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Ağız — yuz noktalarından açıklık
+  const mMidX = (mx1+mx2)/2, mMidY = (my1+my2)/2;
+  const mouthW = Math.hypot(mx1-mx2, my1-my2) / 2;
+  const lipC   = mouthW * 0.18;
+  let openPx = 0;
+  if (yuz && yuz.length >= 10) {
+    const mCxN = (poz[9][0]+poz[10][0])/2, mCyN = (poz[9][1]+poz[10][1])/2;
+    const mWN  = Math.abs(poz[9][0]-poz[10][0]);
+    const pts  = yuz.filter(p => Math.abs(p[0]-mCxN) < mWN && Math.abs(p[1]-mCyN) < mWN*0.9);
+    if (pts.length >= 2) {
+      openPx = (Math.max(...pts.map(p=>p[1])) - Math.min(...pts.map(p=>p[1]))) * S;
+      if (openPx < 2) openPx = 0;
+      openPx = Math.min(openPx, mouthW*1.2);
+    }
+  }
+  ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 6;
+  if (openPx > 3) {
+    ctx.fillStyle = '#1a0a1f';
+    ctx.beginPath(); ctx.moveTo(mx1,mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY-openPx*0.3, mx2, mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY+openPx, mx1, mMidY); ctx.fill();
+    ctx.fillStyle = '#c084fccc';
+    ctx.beginPath(); ctx.moveTo(mx1,mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY-openPx*0.3-lipC, mx2, mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY-lipC*0.3, mx1, mMidY); ctx.fill();
+  } else {
+    ctx.strokeStyle = '#c084fccc'; ctx.lineWidth = Math.max(2, eyeRx*0.35); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(mx1,mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY+lipC*0.8, mx2, mMidY); ctx.stroke();
+    ctx.fillStyle = '#c084fc44';
+    ctx.beginPath(); ctx.moveTo(mx1,mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY+lipC*1.5, mx2, mMidY);
+    ctx.quadraticCurveTo(mMidX, mMidY+lipC*0.4, mx1, mMidY); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════
+// KARE RENDER
+// ═══════════════════════════════════════════════════════════
+function kareRenderKare(ctx, cvs, kare, opts) {
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  if (!kare) return;
+
+  // 1. Vücut silüeti (en altta)
+  if (opts.poz && kare.poz?.length) vucutSiluetCiz(ctx, cvs, kare.poz);
+
+  // 2. El avuçları (dolgu)
+  if (opts.sagEl && kare.sag_el?.length >= 21)
+    elAvucuCiz(ctx, cvs, kare.sag_el, '#00d4ff');
+  if (opts.solEl && kare.sol_el?.length >= 21)
+    elAvucuCiz(ctx, cvs, kare.sol_el, '#00ff9d');
+
+  // 4. Poz iskeleti
+  if (opts.poz && kare.poz?.length)
+    noktalariCiz(ctx, cvs, kare.poz, '#ff8c42', POZ_BAGLANTILARI, 4);
+
+  // 5. El iskeletleri (en üstte)
+  if (opts.sagEl && kare.sag_el?.length >= 21)
+    noktalariCiz(ctx, cvs, kare.sag_el.map(p => [p[0], p[1], p[2] ?? 0, 1.0]), '#00d4ff', EL_BAGLANTILARI);
+  if (opts.solEl && kare.sol_el?.length >= 21)
+    noktalariCiz(ctx, cvs, kare.sol_el.map(p => [p[0], p[1], p[2] ?? 0, 1.0]), '#00ff9d', EL_BAGLANTILARI);
+
+  // 6. Yüz noktaları (30 detaylı nokta — gözler, kaşlar, ağız çevresi)
+  if (opts.yuz && kare.yuz?.length) {
+    noktalariCiz(ctx, cvs, kare.yuz, '#c084fc', null, 1.5);
+  }
+
+  // 6.5 Stilize yüz (göz/kaş/burun/ağız efekti — poz noktalarından)
+  if (opts.yuz && kare.poz?.length >= 11)
+    stilizeYuzCiz(ctx, cvs, kare.poz, kare.yuz || null);
+
+  ctx.shadowBlur = 0;
+}
+
+let _egitimAnimId = null;  // bbox cache anahtari
+let _oyunAnimId   = null;
+
+function kareRender(mod) {
+  if (mod === 'egitim') {
+    const anim = egitimAnim();
+    if (!anim) return;
+    // NOT: bbox ve _egitimAnimId artik render'da hesaplanmaz.
+    // Bunlar kelimeAc / varyant degisikliginde explicit hesaplanir (Adim 3).
+    // Render saf: sadece okur, mutate etmez.
+    const kare = anim.kareler[egitim.kareIdx];
+    // DOM SORGUSU YOK — renderConfig toggle onChange'lerde guncelleniyor
+    kareRenderKare(eCtx, eCanvas, kare, renderConfig);
+    // Cache'lenmis DOM ref'leri ile read-only update:
+    const top = anim.kareler.length;
+    if (domRefs.frameCounter) domRefs.frameCounter.textContent = `${egitim.kareIdx+1} / ${top}`;
+    if (domRefs.progressFill) domRefs.progressFill.style.width = ((egitim.kareIdx+1)/top*100) + '%';
+  } else {
+    if (!oyun.animasyon) return;
+    // Oyun her zaman tum layer'lari gosterir — sabit obje (her render'da yeni obje olusturmuyoruz)
+    kareRenderKare(oCtx, oCanvas, oyun.animasyon.kareler[oyun.kareIdx], OYUN_OPTS);
+  }
+}
+
+// Oyun render opts — sabit, her frame'de yeniden olusturulmasin
+const OYUN_OPTS = { poz: true, sagEl: true, solEl: true, yuz: true };
+
+// ═══════════════════════════════════════════════════════════
+// ANİMASYON DÖNGÜSÜ — EĞİTİM
+// ═══════════════════════════════════════════════════════════
+// v3 verisi gerçek video FPS'inde (genelde 25). v2'de sabit 12.5 FPS idi.
+// Şimdi her varyantın kendi fps'ine göre ms hesaplanır.
+function msKareEgitim() {
+  const a = egitimAnim();
+  const fps = a?.fps || 25;
+  return 1000 / fps;
+}
+function msKareOyun() {
+  const fps = oyun.animasyon?.fps || 25;
+  return 1000 / fps;
+}
+
+function oynatEgitim() {
+  // Generation artir → bekleyen tum eski RAF'lar dogal olarak olur
+  egitim.gen++;
+  if (egitim.animFrame) { cancelAnimationFrame(egitim.animFrame); egitim.animFrame = null; }
+  egitim.oynatiliyor = true;
+  document.getElementById('btnPlay').textContent = '⏸ Duraklat';
+  document.getElementById('btnPlay').classList.add('active');
+  egitim.sonFrame = performance.now();
+  const myGen = egitim.gen;
+  egitim.animFrame = requestAnimationFrame(t => loopEgitim(t, myGen));
+}
+function durdurEgitim() {
+  egitim.gen++;          // herhangi bir bekleyen loop generation kontrolunde olsun
+  egitim.oynatiliyor = false;
+  if (egitim.animFrame) { cancelAnimationFrame(egitim.animFrame); egitim.animFrame = null; }
+  document.getElementById('btnPlay').textContent = '▶ Oynat';
+  document.getElementById('btnPlay').classList.remove('active');
+}
+function loopEgitim(now, myGen) {
+  // Guard: bu loop generation hala aktif mi?
+  if (myGen !== egitim.gen) return;
+  if (!egitim.oynatiliyor) return;
+  if (now - egitim.sonFrame >= msKareEgitim() / hiz) {
+    egitim.sonFrame = now;
+    const anim = egitimAnim();
+    if (anim) {
+      let d = 0;
+      do { egitim.kareIdx++; if (egitim.kareIdx >= anim.kareler.length) egitim.kareIdx = 0; d++; }
+      while (d < anim.kareler.length && !veriVar(anim.kareler[egitim.kareIdx]));
+      kareRender('egitim');
+    }
+  }
+  egitim.animFrame = requestAnimationFrame(t => loopEgitim(t, myGen));
+}
+
+function togglePlay()     { egitim.oynatiliyor ? durdurEgitim() : oynatEgitim(); }
+function sonrakiVaryant() { if (!egitim.kelime) return; egitim.varyantIdx=(egitim.varyantIdx+1)%egitim.kelime.animasyonlar.length; egitim.kareIdx=0; egitimBbox = bboxHesapla(egitim.kelime.animasyonlar[egitim.varyantIdx].kareler); _egitimAnimId = (egitim.kelime?.kelime || '?') + '_' + egitim.varyantIdx; infoGuncelle(); kareRender('egitim'); if(egitim.oynatiliyor) oynatEgitim(); }
+function oncekiVaryant()  { if (!egitim.kelime) return; egitim.varyantIdx=(egitim.varyantIdx-1+egitim.kelime.animasyonlar.length)%egitim.kelime.animasyonlar.length; egitim.kareIdx=0; egitimBbox = bboxHesapla(egitim.kelime.animasyonlar[egitim.varyantIdx].kareler); _egitimAnimId = (egitim.kelime?.kelime || '?') + '_' + egitim.varyantIdx; infoGuncelle(); kareRender('egitim'); if(egitim.oynatiliyor) oynatEgitim(); }
+function hizGuncelle()    { hiz=document.getElementById('speedSlider').value/10; document.getElementById('speedVal').textContent=hiz.toFixed(1)+'x'; }
+
+// ═══════════════════════════════════════════════════════════
+// ANİMASYON DÖNGÜSÜ — OYUN
+// ═══════════════════════════════════════════════════════════
+function oyunOynat() {
+  oyun.gen++;
+  if (oyun.animFrame) { cancelAnimationFrame(oyun.animFrame); oyun.animFrame = null; }
+  oyun.oynatiliyor = true;
+  oyun.sonFrame = performance.now();
+  const myGen = oyun.gen;
+  oyun.animFrame = requestAnimationFrame(t => loopOyun(t, myGen));
+}
+function durduOyun() {
+  oyun.gen++;
+  oyun.oynatiliyor = false;
+  if (oyun.animFrame) { cancelAnimationFrame(oyun.animFrame); oyun.animFrame = null; }
+}
+function loopOyun(now, myGen) {
+  if (myGen !== oyun.gen) return;
+  if (!oyun.oynatiliyor) return;
+  if (now - oyun.sonFrame >= msKareOyun() / oyunHiz) {
+    oyun.sonFrame = now;
+    if (oyun.animasyon) {
+      let d = 0;
+      do { oyun.kareIdx++; if (oyun.kareIdx >= oyun.animasyon.kareler.length) oyun.kareIdx = 0; d++; }
+      while (d < oyun.animasyon.kareler.length && !veriVar(oyun.animasyon.kareler[oyun.kareIdx]));
+      kareRender('oyun');
+    }
+  }
+  oyun.animFrame = requestAnimationFrame(t => loopOyun(t, myGen));
+}
+
+function veriVar(kare) {
+  return kare && ((kare.sag_el && kare.sag_el.length) || (kare.sol_el && kare.sol_el.length) || (kare.poz && kare.poz.length));
+}
+
+// ═══════════════════════════════════════════════════════════
+// OYUN MANTIĞI
+// ═══════════════════════════════════════════════════════════
+const HARFLER = ['A','B','C','D'];
+
+function oyunBaslat() {
+  document.getElementById('gameOver').classList.remove('goster');
+  document.getElementById('oyunBaslangic').classList.add('gizle');
+  oyunDurumDegistir('idle');  // reset
+  oyun._soruToken++;  // bekleyen asenkron sorulari iptal et
+  oyun.aktif=true; oyun.baslamadi=false;
+  oyun.can=3; oyun.puan=0; oyun.seri=0; oyun.seviye=1; oyun.dogruSayisi=0; oyun.yanlisSayisi=0;
+  canlarGuncelle(); hudGuncelle();
+  oyunDurumDegistir('loading');
+  soruOlustur();
+}
+
+async function soruOlustur() {
+  if (!wordsIndex) return;
+  // game_over'da yeni soru uretme. idle ise oyun baslatmamis demektir, ciktimiz.
+  if (oyun.durum === 'game_over') return;
+  if (oyun.durum === 'idle') return;
+  oyunDurumDegistir('loading');
+
+  // Race guard: bu soru cagrisinin token'i
+  const myToken = ++oyun._soruToken;
+
+  // Tüm kelime ID'leri (varyantı olan)
+  const hepsiKid = Object.keys(wordsIndex).filter(kid => (wordsIndex[kid].v || 0) > 0);
+  if (hepsiKid.length < 4) return;
+
+  // Rastgele doğru cevap seç (zorluk yukarı doğru: seviye artıkça daha karmaşık kelimeler)
+  // Basit yaklaşım: tamamen rastgele (v2 davranışı)
+  const dogruKid = hepsiKid[Math.floor(Math.random() * hepsiKid.length)];
+  const dogruAd = wordsIndex[dogruKid].k;
+
+  // 3 yanlış cevap — sadece isim lazım, kp yüklemiyoruz
+  const yanlisIsimler = [];
+  const kullanilan = new Set([dogruAd]);
+  while (yanlisIsimler.length < 3) {
+    const r = hepsiKid[Math.floor(Math.random() * hepsiKid.length)];
+    const ad = wordsIndex[r].k;
+    if (!kullanilan.has(ad)) {
+      kullanilan.add(ad);
+      yanlisIsimler.push({ kelime: ad });
+    }
+  }
+
+  // Doğru cevabın kp'sini yükle
+  let dogruKelime;
+  try {
+    dogruKelime = await kpYukle(dogruKid);
+  } catch (e) {
+    console.warn('kp yüklenemedi, soru atlandı:', dogruKid);
+    if (myToken !== oyun._soruToken) { console.log('[RACE] eski soruOlustur cagrisi iptal'); return; }
+    return soruOlustur();  // tekrar dene
+  }
+
+  // Race guard: bu cagri hala aktif mi?
+  if (myToken !== oyun._soruToken) {
+    console.log('[RACE] eski soruOlustur cagrisi iptal, token:', myToken, 'guncel:', oyun._soruToken);
+    return;
+  }
+  // Durum hala loading degilse (game_over / idle'a kacmis olabilir), state'e dokunma
+  if (oyun.durum !== 'loading') {
+    console.log('[RACE] soruOlustur tamamlandi ama durum', oyun.durum, '— state set iptal');
+    return;
+  }
+
+  oyun.kelime       = dogruKelime;
+  oyun.dogruCevap   = dogruAd;
+  oyun.secenekler   = [dogruKelime, ...yanlisIsimler].sort(() => Math.random() - 0.5);
+  oyun.cevapVerildi = false;
+  oyun.varyantIdx   = Math.floor(Math.random() * dogruKelime.animasyonlar.length);
+  oyun.animasyon    = dogruKelime.animasyonlar[oyun.varyantIdx];
+  oyun.kareIdx      = 0;
+  // bbox hesapla
+  oyunBbox = bboxHesapla(oyun.animasyon.kareler);
+  _oyunAnimId = (oyun.kelime?.kelime || '?') + '_' + oyun.varyantIdx;
+
+  sonucGizle();
+  seceneklerOlustur();
+  varyantGosterGuncelle();
+  canvasBoyutAyarla('oyun');
+  oyunOynat();
+  oyunDurumDegistir('question_active');
+}
+
+function seceneklerOlustur() {
+  document.getElementById('seceneklerGrid').innerHTML = oyun.secenekler.map((k, i) =>
+    `<button class="secenek-btn" id="sec${i}" onclick="cevapVer(${i})">
+      <span class="secenek-harf">${HARFLER[i]}</span>${k.kelime}
+    </button>`).join('');
+}
+
+function cevapVer(idx) {
+  // Sadece question_active'te kabul et
+  if (oyun.durum !== 'question_active') return;
+  if (oyun.cevapVerildi || !oyun.aktif) return;
+  oyun.cevapVerildi = true;
+  oyunDurumDegistir('answer_feedback');
+
+  const secilen = oyun.secenekler[idx].kelime;
+
+  oyun.secenekler.forEach((k, i) => {
+    const btn = document.getElementById('sec' + i);
+    if (!btn) return;
+    btn.disabled = true;
+    if (k.kelime === oyun.dogruCevap) btn.classList.add('dogru');
+    else if (i === idx)               btn.classList.add('yanlis');
+  });
+
+  if (secilen === oyun.dogruCevap) {
+    oyun.seri++; oyun.dogruSayisi++;
+    const bonus = Math.floor(oyun.seri / 3) * 5;
+    const kazan = 10 + bonus;
+    oyun.puan  += kazan;
+    sonucGoster(true, '+' + kazan + ' pts');
+    parcacikFirlatma();
+    if (oyun.dogruSayisi % 10 === 0) { oyun.seviye++; setTimeout(seviyeKutlama, 500); }
+    setTimeout(() => {
+      oyunDurumDegistir('transitioning');
+      soruOlustur();
+    }, 1800);
+  } else {
+    oyun.seri = 0; oyun.yanlisSayisi++; oyun.can--;
+    canlarGuncelle();
+    sonucGoster(false, '');
+    kareShake();
+    if (oyun.can <= 0) setTimeout(oyunBitir, 2200);
+    else setTimeout(() => {
+      oyunDurumDegistir('transitioning');
+      soruOlustur();
+    }, 2200);
+  }
+  hudGuncelle();
+}
+
+function oyunTekrarIzle() {
+  if (!oyun.animasyon) return;
+  // FSM koruma: sadece question_active ve answer_feedback'te tekrar izle
+  if (oyun.durum !== 'question_active' && oyun.durum !== 'answer_feedback') return;
+  oyun.kareIdx = 0;
+  oyunOynat();
+}
+
+function oyunSonrakiVaryant() {
+  if (!oyun.kelime) return;
+  // FSM koruma: sadece question_active'te varyant degisimi kabul et
+  if (oyun.durum !== 'question_active') return;
+  const toplam = oyun.kelime.animasyonlar.length;
+  oyun.varyantIdx = (oyun.varyantIdx + 1) % toplam;
+  oyun.animasyon  = oyun.kelime.animasyonlar[oyun.varyantIdx];
+  oyun.kareIdx    = 0;
+  // bbox hesapla
+  oyunBbox = bboxHesapla(oyun.animasyon.kareler);
+  _oyunAnimId = (oyun.kelime?.kelime || '?') + '_' + oyun.varyantIdx;
+  varyantGosterGuncelle();
+  oyunOynat();
+}
+
+function varyantGosterGuncelle() {
+  const el = document.getElementById('varyantGoster');
+  if (!oyun.kelime) { el.textContent = '—'; return; }
+  const toplam = oyun.kelime.animasyonlar.length;
+  el.textContent = `Varyant ${oyun.varyantIdx + 1} / ${toplam}`;
+  // Buton enable/disable durumu butonDurumGuncelle()'de halledilir.
+  // Burada sadece metin guncelliyoruz, varyant butonu icin tetikle:
+  butonDurumGuncelle();
+}
+
+function oyunHizGuncelle() {
+  oyunHiz = document.getElementById('oyunSpeedSlider').value / 10;
+  document.getElementById('oyunSpeedVal').textContent = oyunHiz.toFixed(1) + 'x';
+}
+
+// ── HUD ───────────────────────────────────────────────
+function hudGuncelle() {
+  document.getElementById('puanGoster').textContent  = oyun.puan;
+  const seri = document.getElementById('seriBadge');
+  seri.textContent = '🔥 Seri: ' + oyun.seri;
+  seri.classList.toggle('aktif', oyun.seri >= 3);
+  document.getElementById('seviyeBadge').textContent = '⭐ Seviye ' + oyun.seviye;
+}
+
+function canlarGuncelle() {
+  document.querySelectorAll('.kalp').forEach((k, i) => k.classList.toggle('kayip', i >= oyun.can));
+}
+
+// ── Sonuç ─────────────────────────────────────────────
+function sonucGoster(dogru, puanStr) {
+  const t = document.getElementById('sonucText');
+  const p = document.getElementById('puanPopup');
+  t.className = 'sonuc-text';
+  p.className = 'puan-popup';
+  t.textContent = dogru ? 'DOĞRU!' : 'YANLIŞ!';
+  t.classList.add(dogru ? 'dogru-renk' : 'yanlis-renk');
+  p.textContent = puanStr;
+  requestAnimationFrame(() => { t.classList.add('goster'); p.classList.add('goster'); });
+}
+function sonucGizle() {
+  document.getElementById('sonucText').className = 'sonuc-text';
+  document.getElementById('puanPopup').className = 'puan-popup';
+}
+
+// ── Efektler ──────────────────────────────────────────
+function kareShake() {
+  const w = document.getElementById('oyunCanvasWrap');
+  w.classList.remove('salla'); void w.offsetWidth; w.classList.add('salla');
+  setTimeout(() => w.classList.remove('salla'), 400);
+}
+
+function seviyeKutlama() {
+  const el = document.getElementById('seviyeAtla');
+  document.getElementById('seviyeAtlaText').textContent = '⭐ SEVİYE ' + oyun.seviye + '! ⭐';
+  el.classList.add('goster');
+  setTimeout(() => el.classList.remove('goster'), 2000);
+}
+
+// ── Game over ─────────────────────────────────────────
+function oyunBitir() {
+  oyunDurumDegistir('game_over');
+  oyun._soruToken++;  // bekleyen asenkron sorulari iptal et
+  oyun.aktif = false; durduOyun();
+  document.getElementById('goScore').textContent = oyun.puan;
+  document.getElementById('goStats').innerHTML =
+    `Seviye ${oyun.seviye} &nbsp;·&nbsp; ${oyun.dogruSayisi} Doğru &nbsp;·&nbsp; ${oyun.yanlisSayisi} Yanlış`;
+  skorKaydet(oyun.puan);
+  liderGoster();
+  document.getElementById('gameOver').classList.add('goster');
+}
+
+// ── Liderboard ────────────────────────────────────────
+function skorKaydet(puan) {
+  let sk = JSON.parse(localStorage.getItem('tidSkorlar') || '[]');
+  sk.push({ puan, tarih: new Date().toLocaleDateString('tr-TR') });
+  sk.sort((a, b) => b.puan - a.puan);
+  localStorage.setItem('tidSkorlar', JSON.stringify(sk.slice(0, 5)));
+}
+function liderGoster() {
+  const sk  = JSON.parse(localStorage.getItem('tidSkorlar') || '[]');
+  const el  = document.getElementById('liderListesi');
+  const ico = ['🥇','🥈','🥉','4.','5.'];
+  el.innerHTML = sk.length
+    ? sk.map((s,i) => `<div class="lider-item"><span>${ico[i]} ${s.tarih}</span><span>${s.puan} pts</span></div>`).join('')
+    : '<div style="text-align:center;font-family:Space Mono,monospace;font-size:11px;color:var(--muted)">Henüz skor yok</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PARTİKÜL SİSTEMİ
+// ═══════════════════════════════════════════════════════════
+let parcaciklar = [];
+const RENKLER   = ['#00d4ff','#00ff9d','#ffd700','#c084fc','#ff8c42','#ffffff'];
+
+function parcacikFirlatma() {
+  const cx = pCanvas.width / 2, cy = pCanvas.height / 2;
+  for (let i = 0; i < 50; i++) {
+    const a = Math.random() * Math.PI * 2, s = 3 + Math.random() * 7;
+    parcaciklar.push({ x: cx, y: cy, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 3, life: 1, r: 3+Math.random()*4, renk: RENKLER[Math.floor(Math.random()*RENKLER.length)] });
+  }
+  parcacikGuncelle();
+}
+function parcacikGuncelle() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  parcaciklar = parcaciklar.filter(p => p.life > 0.02);
+  for (const p of parcaciklar) {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.28; p.life -= 0.022;
+    pCtx.globalAlpha = p.life; pCtx.fillStyle = p.renk;
+    pCtx.shadowColor = p.renk; pCtx.shadowBlur = 6;
+    pCtx.beginPath(); pCtx.arc(p.x, p.y, p.r, 0, Math.PI*2); pCtx.fill();
+  }
+  pCtx.globalAlpha = 1; pCtx.shadowBlur = 0;
+  if (parcaciklar.length) requestAnimationFrame(parcacikGuncelle);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MOBİL-GÖRÜNÜR HATA YAKALAMA (telefon Console yok)
+// ═══════════════════════════════════════════════════════════
+function hataGoster(metin) {
+  let el = document.getElementById('hataKutusu');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'hataKutusu';
+    el.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;background:#ff446622;border:1px solid #ff4466;color:#ff8888;padding:8px 12px;border-radius:6px;font-family:monospace;font-size:11px;z-index:9999;max-height:120px;overflow:auto;word-break:break-word';
+    el.onclick = () => el.remove();
+    document.body.appendChild(el);
+  }
+  el.textContent = '❌ ' + metin + ' (kapatmak için dokun)';
+}
+window.addEventListener('error', e => {
+  hataGoster(`${e.message} @ ${e.filename?.split('/').pop()}:${e.lineno}`);
+});
+window.addEventListener('unhandledrejection', e => {
+  hataGoster(`Promise: ${e.reason?.message || e.reason}`);
+});
+
+// FSM WATCHDOG: transitioning veya loading'de 5+ saniye takilirsa kurtarmaya gec
+let _watchdog = null;
+function watchdogBaslat(saniye = 5) {
+  if (_watchdog) clearTimeout(_watchdog);
+  _watchdog = setTimeout(() => {
+    if (oyun.durum === 'loading' || oyun.durum === 'transitioning') {
+      hataGoster(`Watchdog: ${oyun.durum} ${saniye}s+ takildi, kurtariliyor`);
+      // Zorla yeni soru
+      if (oyun.aktif) {
+        oyun._soruToken++;
+        oyun.durum = 'idle';  // FSM bypass — direkt set
+        oyunDurumDegistir('loading');
+        soruOlustur();
+      }
+    }
+  }, saniye * 1000);
+}
+function watchdogDurdur() {
+  if (_watchdog) { clearTimeout(_watchdog); _watchdog = null; }
+}
+
+// FSM gecislerinde watchdog otomatik yonetilir — oyunDurumDegistir icinden
+// (asagidaki fonksiyon icine entegre edilecek)
+
+// ═══════════════════════════════════════════════════════════
+// BAŞLAT
+// ═══════════════════════════════════════════════════════════
+domCacheInit();           // DOM ref'leri cache'le (Madde 1)
+canvasBoyutAyarla('her');
+veriYukle();
+</script>
+</body>
+</html>
