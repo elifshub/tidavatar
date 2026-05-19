@@ -151,6 +151,8 @@ canvas { width: 100%; height: 100%; display: block; }
 .sa-text { font-family: 'Space Mono', monospace; font-size: 32px; color: var(--gold); letter-spacing: 4px; text-shadow: 0 0 40px var(--gold); animation: sallanma .4s ease-in-out 3; }
 @keyframes sallanma { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 @keyframes sallaN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+@keyframes donme { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+#loadingOverlay.aktif { display: flex !important; }
 .salla { animation: sallaN .35s ease-in-out; }
 #particleCanvas { position: absolute; inset: 0; pointer-events: none; z-index: 9; width: 100%; height: 100%; }
 .load-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; gap: 16px; }
@@ -298,7 +300,7 @@ canvas { width: 100%; height: 100%; display: block; }
 
 <!-- YÜKLEME -->
 <div class="load-overlay" id="overlay">
-  <div class="load-title">TİD Avatar v29 Yükleniyor</div>
+  <div class="load-title">TİD Avatar v30 Yükleniyor</div>
   <div class="load-bar"><div class="load-fill"></div></div>
   <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)" id="loadMsg">public/data/words.json bekleniyor...</div>
 </div>
@@ -414,6 +416,12 @@ canvas { width: 100%; height: 100%; display: block; }
 
       <canvas id="oyunCanvas"></canvas>
       <canvas id="particleCanvas"></canvas>
+
+      <!-- Loading overlay (FSM loading durumunda görünür) -->
+      <div id="loadingOverlay" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#080c1099;backdrop-filter:blur(2px);z-index:8;pointer-events:none">
+        <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:donme 0.8s linear infinite"></div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px">YÜKLENIYOR</div>
+      </div>
 
       <!-- Sonuç overlay -->
       <div class="sonuc-overlay">
@@ -683,7 +691,8 @@ const oyun = {
   _soruToken: 0,
   secenekler: [], dogruCevap: null, cevapVerildi: false,
   can: 3, puan: 0, seri: 0, seviye: 1, dogruSayisi: 0, yanlisSayisi: 0,
-  pasHakki: 3, pasSayisi: 0
+  pasHakki: 3, pasSayisi: 0,
+  _sonrakiKid: null   // preload: bir sonraki sorunun ön-seçilmiş kid'i
 };
 
 // FSM gecisleri — tek merkez. Console log debugging icin.
@@ -730,9 +739,15 @@ function oyunDurumDegistir(yeni, force = false) {
   oyun.durum = yeni;
   console.log(`[FSM] ${eski} → ${yeni}${force ? ' (force)' : ''}`);
   butonDurumGuncelle();
-  // Watchdog: loading veya transitioning'de takilirsak 5 saniye sonra kurtar
+  // Loading overlay (canvas üzerinde "Yükleniyor" göstergesi)
+  const lo = document.getElementById('loadingOverlay');
+  if (lo) {
+    if (yeni === 'loading' || yeni === 'transitioning') lo.classList.add('aktif');
+    else lo.classList.remove('aktif');
+  }
+  // Watchdog: loading veya transitioning'de takilirsak 8 saniye sonra kurtar
   if (typeof watchdogBaslat === 'function') {
-    if (yeni === 'loading' || yeni === 'transitioning') watchdogBaslat(5);
+    if (yeni === 'loading' || yeni === 'transitioning') watchdogBaslat(8);
     else watchdogDurdur();
   }
   return true;
@@ -1399,6 +1414,7 @@ function oyunBaslat() {
   oyun.aktif=true; oyun.baslamadi=false;
   oyun.can=3; oyun.puan=0; oyun.seri=0; oyun.seviye=1; oyun.dogruSayisi=0; oyun.yanlisSayisi=0;
   oyun.pasHakki=3; oyun.pasSayisi=0;
+  oyun._sonrakiKid = null;  // preload temizle (yeni oyun)
   canlarGuncelle(); hudGuncelle();
   oyunDurumDegistir('loading');
   soruOlustur();
@@ -1418,10 +1434,18 @@ async function soruOlustur() {
   const hepsiKid = Object.keys(wordsIndex).filter(kid => (wordsIndex[kid].v || 0) > 0);
   if (hepsiKid.length < 4) return;
 
-  // Rastgele doğru cevap seç (zorluk yukarı doğru: seviye artıkça daha karmaşık kelimeler)
-  // Basit yaklaşım: tamamen rastgele (v2 davranışı)
-  const dogruKid = hepsiKid[Math.floor(Math.random() * hepsiKid.length)];
-  const dogruAd = wordsIndex[dogruKid].k;
+  // PRELOAD KULLAN: Eğer önceden seçilmiş ve hazırlanmış bir kid varsa onu kullan
+  let dogruKid, dogruAd;
+  if (oyun._sonrakiKid && kpCache[oyun._sonrakiKid]) {
+    dogruKid = oyun._sonrakiKid;
+    dogruAd = wordsIndex[dogruKid].k;
+    oyun._sonrakiKid = null;  // tüketildi
+    console.log('[PRELOAD] hazır kelimeyi kullandı:', dogruKid, dogruAd);
+  } else {
+    // Yoksa rastgele seç
+    dogruKid = hepsiKid[Math.floor(Math.random() * hepsiKid.length)];
+    dogruAd = wordsIndex[dogruKid].k;
+  }
 
   // 3 yanlış cevap — sadece isim lazım, kp yüklemiyoruz
   const yanlisIsimler = [];
@@ -1435,7 +1459,7 @@ async function soruOlustur() {
     }
   }
 
-  // Doğru cevabın kp'sini yükle
+  // Doğru cevabın kp'sini yükle (cache'de varsa anında döner)
   let dogruKelime;
   try {
     dogruKelime = await kpYukle(dogruKid);
@@ -1473,6 +1497,38 @@ async function soruOlustur() {
   canvasBoyutAyarla('oyun');
   oyunOynat();
   oyunDurumDegistir('question_active');
+
+  // PRELOAD: Bir sonraki soruyu arka planda hazırla (bu sorudan farklı bir kid)
+  sonrakiSoruPreload(hepsiKid, dogruKid);
+}
+
+// Arka planda bir sonraki sorunun kp dosyasını indir
+// Sessiz çalışır, hata olursa görmezden gelir
+function sonrakiSoruPreload(hepsiKid, mevcutKid) {
+  // Rastgele bir kid seç (mevcuttan farklı)
+  let sonrakiKid;
+  let deneme = 0;
+  do {
+    sonrakiKid = hepsiKid[Math.floor(Math.random() * hepsiKid.length)];
+    deneme++;
+  } while (sonrakiKid === mevcutKid && deneme < 10);
+
+  oyun._sonrakiKid = sonrakiKid;
+
+  // Cache'de zaten varsa indirme
+  if (kpCache[sonrakiKid]) {
+    console.log('[PRELOAD] zaten cache\'de:', sonrakiKid);
+    return;
+  }
+
+  // Sessizce indir, hata olursa görmezden gel (bir sonraki soru zaten fallback yapar)
+  console.log('[PRELOAD] indirilmeye başlandı:', sonrakiKid, wordsIndex[sonrakiKid]?.k);
+  kpYukle(sonrakiKid).then(() => {
+    console.log('[PRELOAD] hazır:', sonrakiKid);
+  }).catch(e => {
+    console.warn('[PRELOAD] başarısız (sorun değil, fallback edilir):', sonrakiKid);
+    oyun._sonrakiKid = null;  // başarısız, temizle
+  });
 }
 
 function seceneklerOlustur() {
@@ -1720,11 +1776,15 @@ function hataGoster(metin) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'hataKutusu';
-    el.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;background:#ff446622;border:1px solid #ff4466;color:#ff8888;padding:8px 12px;border-radius:6px;font-family:monospace;font-size:11px;z-index:9999;max-height:120px;overflow:auto;word-break:break-word';
+    // Üstte sabitlenmiş, şıkları örtmeyen konum
+    el.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);max-width:90vw;background:#ff446622;border:1px solid #ff4466;color:#ff8888;padding:8px 14px;border-radius:6px;font-family:monospace;font-size:11px;z-index:9999;max-height:80px;overflow:auto;word-break:break-word;backdrop-filter:blur(4px);box-shadow:0 4px 12px rgba(0,0,0,0.4);cursor:pointer';
     el.onclick = () => el.remove();
     document.body.appendChild(el);
   }
-  el.textContent = '❌ ' + metin + ' (kapatmak için dokun)';
+  el.textContent = '⚠ ' + metin;
+  // 4 saniye sonra otomatik kapan (kullanıcı tıklamasa bile)
+  clearTimeout(el._autoClose);
+  el._autoClose = setTimeout(() => { if (el.parentNode) el.remove(); }, 4000);
 }
 window.addEventListener('error', e => {
   hataGoster(`${e.message} @ ${e.filename?.split('/').pop()}:${e.lineno}`);
@@ -1735,15 +1795,18 @@ window.addEventListener('unhandledrejection', e => {
 
 // FSM WATCHDOG: transitioning veya loading'de 5+ saniye takilirsa kurtarmaya gec
 let _watchdog = null;
-function watchdogBaslat(saniye = 5) {
+function watchdogBaslat(saniye = 8) {
   if (_watchdog) clearTimeout(_watchdog);
   _watchdog = setTimeout(() => {
     if (oyun.durum === 'loading' || oyun.durum === 'transitioning') {
-      hataGoster(`Watchdog: ${oyun.durum} ${saniye}s+ takildi, kurtariliyor`);
+      hataGoster(`Yükleme yavaş, tekrar deneniyor...`);
       // Zorla yeni soru — FSM uzerinden force ile
       if (oyun.aktif) {
         oyun._soruToken++;
+        oyun._sonrakiKid = null;  // preload da iptal
         clearAllTimeouts('oyun-akis');  // bekleyen oyun-akis timeoutlarini iptal et
+        // Canvas'ı temizle (yarım kalmış görüntü göstermesin)
+        if (oCtx && oCanvas) oCtx.clearRect(0, 0, oCanvas.width, oCanvas.height);
         oyunDurumDegistir('loading', true);  // force: ayni state olsa bile tetikle
         soruOlustur();
       }
